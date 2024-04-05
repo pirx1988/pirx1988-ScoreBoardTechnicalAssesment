@@ -2,6 +2,7 @@ package kmichalski.scoreboard.controller;
 
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.repostiory.GameRepository;
+import kmichalski.scoreboard.service.BoardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -14,12 +15,11 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class BoardController {
-    private final GameRepository gameRepository;
+    private final BoardService boardService;
 
     @RequestMapping(value={"","/","/board"})
     public String displayBoardPage (Model model) {
-//        Game games =  gameRepository.findById(1L).orElseThrow();
-        List<Game> gamesList =  gameRepository.findAll();
+//        List<Game> gamesList =  gameRepository.findAll();
         return "board.html";
     }
 }
