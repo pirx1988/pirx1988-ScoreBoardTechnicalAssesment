@@ -10,6 +10,7 @@ import lombok.*;
 @Getter
 @Setter
 @EqualsAndHashCode(callSuper = true)
+@Builder
 public class Team extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -26,6 +26,7 @@ import lombok.*;
                 )
         }
 )
+@Builder
 public class Game extends BaseEntity {
 
     @Id
@@ -41,11 +42,12 @@ public class Game extends BaseEntity {
     private Team awayTeam;
 
     @Column
-    private int homeTeamScore;
+    private Integer homeTeamScore;
 
     @Column
-    private int awayTeamScore;
+    private Integer awayTeamScore;
 
     @Enumerated(EnumType.STRING)
+    @Column
     private GameStatus gameStatus;
 }
