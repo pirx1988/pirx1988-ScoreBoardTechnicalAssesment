@@ -8,6 +8,8 @@ import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class BoardService {
@@ -25,5 +27,27 @@ public class BoardService {
                 .homeTeamScore(null)
                 .build();
         return gameRepository.save(newGame);
+    }
+
+    public Game startNewGame(Long gameId) {
+        Game game = gameRepository.findById(gameId).orElseThrow();
+        game.setHomeTeamScore(0);
+        game.setAwayTeamScore(0);
+        game.setGameStatus(GameStatus.IN_PROGRESS);
+        return gameRepository.save(game);
+    }
+
+    public Game updateGame(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
+        Game game = gameRepository.findById(gameId).orElseThrow();
+        game.setHomeTeamScore(newHomeTeamScore);
+        game.setAwayTeamScore(newAwayTeamScore);
+        return gameRepository.save(game);
+    }
+
+    // TODO: Remember about edge case when. Game can be finished only when in progress
+    public Long finishGame(Long gameId) {
+        Game game = gameRepository.findById(gameId).orElseThrow();
+        game.setGameStatus(GameStatus.FINISHED);
+        return gameRepository.save(game).getId();
     }
 }
