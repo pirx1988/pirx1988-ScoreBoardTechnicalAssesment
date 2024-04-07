@@ -8,6 +8,7 @@ import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -49,5 +50,9 @@ public class BoardService {
         Game game = gameRepository.findById(gameId).orElseThrow();
         game.setGameStatus(GameStatus.FINISHED);
         return gameRepository.save(game).getId();
+    }
+
+    public List<Game> getAllUnfinishedGames() {
+        return gameRepository.findByGameStatusNot(GameStatus.FINISHED);
     }
 }

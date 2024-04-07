@@ -19,7 +19,8 @@ public class BoardController {
 
     @RequestMapping(value={"","/","/board"})
     public String displayBoardPage (Model model) {
-//        List<Game> gamesList =  gameRepository.findAll();
+        List<Game> unfinishedGames =  boardService.getAllUnfinishedGames();
+        model.addAttribute("unfinishedGames", unfinishedGames);
         return "board.html";
     }
 }

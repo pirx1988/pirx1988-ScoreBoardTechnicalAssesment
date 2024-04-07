@@ -5,14 +5,46 @@
     <title>Football World Cup Score Board</title>
     <link rel="stylesheet" type="text/css"
           th:href="@{/webjars/bootstrap/5.2.2/css/bootstrap.min.css}"/>
-<!--    <link rel="stylesheet" href="assets/css/style-starter.css">-->
+    <!--    <link rel="stylesheet" href="assets/css/style-starter.css">-->
     <link rel="stylesheet" type="text/css"
           th:href="@{/webjars/font-awesome/6.2.0/css/all.css}">
 </head>
 <body>
-
-<div class="container-lg">
-    <h1 th:text="'Welcome in board'"></h1>
+<div class="container">
+    <h1 th:text="'Welcome in Football World Cup Score Board'"></h1>
+    <div class="row mt-5 col-2">
+        <button type="button" class="btn btn-secondary btn-sm">Add new match</button>
+    </div>
+    <div class="row mt-5" th:each="game, iteration: ${unfinishedGames}">
+        <div class="col-1">
+            <span th:text="${iteration.index + 1}"></span>
+        </div>
+        <div class="col-1">
+            <span th:text="${game.homeTeam.name + ' ' +  (game.homeTeamScore != null ?  game.homeTeamScore : '')}"></span>
+        </div>
+        <div class="col-1" style="text-align: center;">
+            -
+        </div>
+        <div class="col-1">
+            <span th:text="${game.awayTeam.name + ' '+  (game.awayTeamScore != null ?  game.awayTeamScore : '')}"></span>
+        </div>
+        <div class="col-2" th:if="${game.gameStatus.toString()=='NEW'}">
+            <button type="button" class="btn btn-primary btn-sm">Start Match</button>
+        </div>
+        <div class="col-3" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
+            <button type="button" class="btn btn-primary btn-sm">Update Match</button>
+            <button type="button" class="btn btn-primary btn-sm">Finish Match</button>
+        </div>
+        <!--        <div class="col-1">-->
+        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
+        <!--        </div>-->
+        <!--        <div class="col-1">-->
+        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
+        <!--        </div>-->
+        <!--        <div class="col-1">-->
+        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
+        <!--        </div>-->
+    </div>
 </div>
 
 <script type="text/javascript"

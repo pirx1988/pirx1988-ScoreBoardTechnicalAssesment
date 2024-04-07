@@ -1,6 +1,7 @@
 package kmichalski.scoreboard.repostiory;
 
 import kmichalski.scoreboard.model.Game;
+import kmichalski.scoreboard.model.GameStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,4 +14,7 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     // EntityGraph.EntityGraphType.FETCH means that only the specified attributes are retrieved
     @EntityGraph(value = "game-entity-graph", type = EntityGraph.EntityGraphType.FETCH)
     List<Game> findAll();
+
+    @EntityGraph(value = "game-entity-graph", type = EntityGraph.EntityGraphType.FETCH)
+    List<Game> findByGameStatusNot(GameStatus gameStatus);
 }
