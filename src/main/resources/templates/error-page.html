@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Investment support system</title>
+  <link rel="stylesheet" type="text/css"
+        th:href="@{/webjars/bootstrap/5.2.2/css/bootstrap.min.css}"/>
+  <link rel="stylesheet" href="assets/css/style-starter.css">
+  <link rel="stylesheet" type="text/css"
+        th:href="@{/webjars/font-awesome/6.2.0/css/all.css}">
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-12 ">
+        <div class="col-sm-10 col-sm-offset-1  text-center">
+          <div class="four_zero_four_bg">
+            <h1 class="text-center">oops...</h1>
+          </div>
+          <div class="contant_box_404">
+            <h3 class="h2">
+              Look like you're lost
+            </h3>
+            <p th:text="${'Error Message - ' + errormsg}"></p>
+            <a th:href="@{/}" class="link_404 btn btn-style btn-style-3">Go to Board</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script type="text/javascript"
+        th:src="@{/webjars/jquery/3.6.1/dist/jquery.min.js}"></script>
+<script type="text/javascript"
+        th:src="@{/webjars/bootstrap/5.2.2/js/bootstrap.min.js}"></script>
+</body>
+</html>
