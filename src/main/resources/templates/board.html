@@ -29,7 +29,9 @@
             <span th:text="${game.awayTeam.name + ' '+  (game.awayTeamScore != null ?  game.awayTeamScore : '')}"></span>
         </div>
         <div class="col-2" th:if="${game.gameStatus.toString()=='NEW'}">
-            <button type="button" class="btn btn-primary btn-sm">Start Match</button>
+            <form th:action="@{'/start-match/' + ${game.id}}" method="post">
+                <button class="btn btn-primary btn-sm" type="submit">Start Match</button>
+            </form>
         </div>
         <div class="col-3" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
             <button type="button" class="btn btn-primary btn-sm">Update Match</button>

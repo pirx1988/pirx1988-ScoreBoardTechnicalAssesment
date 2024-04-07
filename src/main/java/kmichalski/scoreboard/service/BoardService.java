@@ -1,18 +1,22 @@
 package kmichalski.scoreboard.service;
 
+import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BoardService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
@@ -31,7 +35,14 @@ public class BoardService {
     }
 
     public Game startNewGame(Long gameId) {
-        Game game = gameRepository.findById(gameId).orElseThrow();
+        Game game = gameRepository.findById(gameId).orElseThrow(
+                () -> new NoSuchElementException("Game not found with Id: " + gameId)
+        );
+        if (!game.getGameStatus().equals(GameStatus.NEW)) {
+            throw new ImproperStatusGameException("Improper Status game: " + game.getGameStatus()
+                    + "Game with id: " + gameId + " not started." + "Expected Game status: " + GameStatus.NEW);
+        }
+
         game.setHomeTeamScore(0);
         game.setAwayTeamScore(0);
         game.setGameStatus(GameStatus.IN_PROGRESS);
