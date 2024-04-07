@@ -66,6 +66,7 @@ public class BoardServiceIntegrationTest {
         assertNull(savedGame.getAwayTeamScore());
     }
 
+
     @Test
     void shouldCorrectlySetInitialGameState_whenNewGameStarted() {
         teamRepository.save(homeTeam);
@@ -85,6 +86,16 @@ public class BoardServiceIntegrationTest {
         assertEquals(0, startedGame.getHomeTeamScore());
         assertEquals(0, startedGame.getAwayTeamScore());
         assertEquals(GameStatus.IN_PROGRESS, startedGame.getGameStatus());
+    }
+
+    @Test
+    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWithImproperStatus() {
+        // TODO: Write integration test
+    }
+
+    @Test
+    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists(){
+        // TODO: Write integration test
     }
 
     @Test
