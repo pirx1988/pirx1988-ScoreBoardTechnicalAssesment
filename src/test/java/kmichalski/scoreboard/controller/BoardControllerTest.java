@@ -59,7 +59,7 @@ class BoardControllerTest {
 
     @Test
     void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
-        mockMvc.perform(post("/start-match/123"))
+        mockMvc.perform(post("/start-game/123"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
     }
@@ -69,7 +69,7 @@ class BoardControllerTest {
         doThrow(new ImproperStatusGameException("Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"))
                 .when(boardService).startNewGame(123L);
 
-        mockMvc.perform(post("/start-match/123"))
+        mockMvc.perform(post("/start-game/123"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"));
@@ -80,7 +80,7 @@ class BoardControllerTest {
         doThrow(new NoSuchElementException("Game not found with Id: 123"))
                 .when(boardService).startNewGame(123L);
 
-        mockMvc.perform(post("/start-match/123"))
+        mockMvc.perform(post("/start-game/123"))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Game not found with Id: 123"));

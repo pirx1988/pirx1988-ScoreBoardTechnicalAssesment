@@ -26,9 +26,9 @@ public class BoardController {
         return "board.html";
     }
 
-    @PostMapping("/start-match/{matchId}")
-    public String startMatch(@PathVariable long matchId) {
-        boardService.startNewGame(matchId);
-        return "redirect:/"; // Redirect to board view: after starting the match
+    @PostMapping("/start-game/{gameId}")
+    public String startGame(@PathVariable long gameId) {
+        boardService.startNewGame(gameId);
+        return "redirect:/"; // Redirect to board view: after starting the game
     }
 }
