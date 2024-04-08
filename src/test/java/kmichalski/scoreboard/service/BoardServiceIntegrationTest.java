@@ -1,5 +1,6 @@
 package kmichalski.scoreboard.service;
 
+import kmichalski.scoreboard.dto.GameDto;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
@@ -52,8 +53,16 @@ public class BoardServiceIntegrationTest {
 
     @Test
     void shouldCreateNewGame() {
+
+        long homeTeamId = teamRepository.save(homeTeam).getId();
+        long awayTeamId = teamRepository.save(awayTeam).getId();
+        GameDto gameDto = GameDto.builder()
+                .homeTeamId(homeTeamId)
+                .awayTeamId(awayTeamId)
+                .build();
+
         // Act
-        boardService.createNewGame(homeTeam, awayTeam);
+        boardService.createNewGame(gameDto);
 
         List<Game> savedGames = gameRepository.findAll();
         assertEquals(1, savedGames.size());
@@ -94,7 +103,7 @@ public class BoardServiceIntegrationTest {
     }
 
     @Test
-    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists(){
+    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists() {
         // TODO: Write integration test
     }
 
@@ -105,8 +114,8 @@ public class BoardServiceIntegrationTest {
 
         Game gameInProgress = Game.builder().homeTeam(homeTeam)
                 .awayTeam(awayTeam)
-                .homeTeamScore(NEW_HOME_TEAM_SCORE-10)
-                .awayTeamScore(NEW_AWAY_TEAM_SCORE-10)
+                .homeTeamScore(NEW_HOME_TEAM_SCORE - 10)
+                .awayTeamScore(NEW_AWAY_TEAM_SCORE - 10)
                 .gameStatus(GameStatus.IN_PROGRESS)
                 .build();
         gameRepository.save(gameInProgress);

@@ -1,5 +1,6 @@
 package kmichalski.scoreboard.service;
 
+import kmichalski.scoreboard.dto.GameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
@@ -12,7 +13,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,9 +21,13 @@ public class BoardService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
 
-    public Game createNewGame(Team homeTeam, Team awayTeam) {
-        Team savedHomeTeam = teamRepository.save(homeTeam);
-        Team savedAwayTeam = teamRepository.save(awayTeam);
+    public Game createNewGame(GameDto gameDto) {
+        Team savedHomeTeam = teamRepository.findById(gameDto.getHomeTeamId()).orElseThrow(
+                () -> new NoSuchElementException("Team not found with Id: " + gameDto.getHomeTeamId())
+        );
+        Team savedAwayTeam = teamRepository.findById(gameDto.getAwayTeamId()).orElseThrow(
+                () -> new NoSuchElementException("Team not found with Id: " + gameDto.getAwayTeamId())
+        );
         Game newGame = Game.builder()
                 .gameStatus(GameStatus.NEW)
                 .homeTeam(savedHomeTeam)

@@ -1,5 +1,6 @@
 package kmichalski.scoreboard.service;
 
+import kmichalski.scoreboard.dto.GameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
@@ -18,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -30,6 +32,8 @@ class BoardServiceTest {
     private static final long GAME_ID = 123L;
     private static final int NEW_HOME_TEAM_SCORE = 5;
     private static final int NEW_AWAY_TEAM_SCORE = 4;
+    private static final Long HOME_TEAM_ID = 1L;
+    private static final long AWAY_TEAM_ID = 2L;
     @Mock
     GameRepository gameRepository;
 
@@ -40,18 +44,21 @@ class BoardServiceTest {
     BoardService service;
 
     @Test
-    void shouldCreateNewGame_whenCreateNewGameInvokedWithTwoDifferentTeams() {
-        Team homeTeamMock = Mockito.mock(Team.class);
-        Team awayTeamMock = Mockito.mock(Team.class);
+    void shouldProperlyCreateNewGame() {
+        GameDto gameDto = GameDto.builder()
+                .homeTeamId(HOME_TEAM_ID)
+                .awayTeamId(AWAY_TEAM_ID)
+                .build();
 
-        Team savedHomeTeamMock = Mockito.mock(Team.class);
-        Team savedAwayTeamMock = Mockito.mock(Team.class);
+        Team homeTeam = Mockito.mock(Team.class);
+        Team awayTeam = Mockito.mock(Team.class);
 
-        when(teamRepository.save(homeTeamMock)).thenReturn(savedHomeTeamMock);
-        when(teamRepository.save(awayTeamMock)).thenReturn(savedAwayTeamMock);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
 
         // Act
-        service.createNewGame(homeTeamMock, awayTeamMock);
+        service.createNewGame(gameDto);
 
         ArgumentCaptor<Game> newGameArgumentCaptor = ArgumentCaptor.forClass(Game.class);
 
@@ -59,10 +66,44 @@ class BoardServiceTest {
 
         Game newGame = newGameArgumentCaptor.getValue();
         assertThat(newGame.getGameStatus()).isEqualTo(GameStatus.NEW);
-        assertThat(newGame.getHomeTeam()).isEqualTo(savedHomeTeamMock);
-        assertThat(newGame.getAwayTeam()).isEqualTo(savedAwayTeamMock);
+        assertThat(newGame.getHomeTeam()).isEqualTo(homeTeam);
+        assertThat(newGame.getAwayTeam()).isEqualTo(awayTeam);
         assertThat(newGame.getHomeTeamScore()).isNull();
         assertThat(newGame.getAwayTeamScore()).isNull();
+    }
+
+    @Test
+    void shouldThrowNoSuchElementException_whenAttemptToCreateGameWhilstHomeTeamNotExists() {
+        GameDto gameDto = GameDto.builder()
+                .homeTeamId(HOME_TEAM_ID)
+                .awayTeamId(AWAY_TEAM_ID)
+                .build();
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> service.createNewGame(gameDto));
+        verify(teamRepository,times(1)).findById(HOME_TEAM_ID);
+        verifyNoInteractions(gameRepository);
+    }
+
+    @Test
+    void shouldThrowNoSuchElementException_whenAttemptToCreateGameWhilstAwayTeamNotExists() {
+        GameDto gameDto = GameDto.builder()
+                .homeTeamId(HOME_TEAM_ID)
+                .awayTeamId(AWAY_TEAM_ID)
+                .build();
+
+        Team homeTeam = Mockito.mock(Team.class);
+
+        when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.of(homeTeam));
+        when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> service.createNewGame(gameDto));
+        verify(teamRepository,times(1)).findById(HOME_TEAM_ID);
+        verify(teamRepository,times(1)).findById(AWAY_TEAM_ID);
+        verifyNoInteractions(gameRepository);
     }
 
     @Test
@@ -91,7 +132,7 @@ class BoardServiceTest {
     }
 
     @Test
-    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists(){
+    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists() {
         // TODO: Write unit test
     }
 
