@@ -1,10 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http:/ww.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Create new game</title>
+    <title>Football World Cup Score Board</title>
+    <link rel="stylesheet" type="text/css"
+          th:href="@{/webjars/bootstrap/5.2.2/css/bootstrap.min.css}"/>
+    <!--    <link rel="stylesheet" href="assets/css/style-starter.css">-->
+    <link rel="stylesheet" type="text/css"
+          th:href="@{/webjars/font-awesome/6.2.0/css/all.css}">
 </head>
 <body>
+<div class="container">
+    <h1 th:text="'Create new game'"></h1>
+    <ul class="list-group">
+        <li class="alert alert-danger col-4" style="list-style-type: none;" role="alert"
+            th:each="error : ${#fields.errors('newGame.*')}" th:text="${error}"/>
+    </ul>
+    <form class="mt-4" action="/create-new-game" th:object="${newGame}" method="post">
+        <div class="form-group">
+            <label for="homeTeam">Home Team:</label>
+            <select id="homeTeam" name="homeTeam" th:field="*{homeTeamId}">
+                <option th:each="team : ${allTeams}" th:value="${team.id}" th:text="${team.name}"></option>
+            </select>
+        </div>
+        <br/>
+        <div class="form-group">
+            <label for="awayTeam">Away Team:</label>
+            <select id="awayTeam" name="awayTeam" th:field="*{awayTeamId}">
+                <option th:each="team : ${allTeams}" th:value="${team.id}" th:text="${team.name}"></option>
+            </select>
+        </div>
+        <br/>
+        <button type="submit" class="btn-success btn">Save Game</button>
+    </form>
+</div>
 
+<script type="text/javascript"
+        th:src="@{/webjars/jquery/3.6.1/dist/jquery.min.js}"></script>
+<script type="text/javascript"
+        th:src="@{/webjars/bootstrap/5.2.2/js/bootstrap.min.js}"></script>
 </body>
 </html>
