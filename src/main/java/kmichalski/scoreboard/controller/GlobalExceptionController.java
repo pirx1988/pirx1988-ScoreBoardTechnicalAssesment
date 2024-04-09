@@ -1,6 +1,8 @@
 package kmichalski.scoreboard.controller;
 
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
+import kmichalski.scoreboard.exception.IncorrectTotalScoreFormatException;
+import kmichalski.scoreboard.exception.NegativeTotalScoreException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,17 +22,31 @@ public class GlobalExceptionController {
     * */
     @ExceptionHandler(value = {ImproperStatusGameException.class})
     public ModelAndView improperGameStatusExceptionHandler(Exception exception) {
-        ModelAndView errorPage = new ModelAndView();
-        errorPage.setViewName("error-page");
-        errorPage.addObject("errormsg", exception.getMessage());
-        return errorPage;
+        return createAndSetupModelAndView(exception);
     }
 
     @ExceptionHandler(value = {NoSuchElementException.class})
     public ModelAndView elementNotFoundExceptionHandler(Exception exception) {
+        return createAndSetupModelAndView(exception);
+    }
+
+
+    @ExceptionHandler(value={IncorrectTotalScoreFormatException.class})
+    public ModelAndView handleIncorrectTotalScoreFormatException(IncorrectTotalScoreFormatException exception) {
+        return createAndSetupModelAndView(exception);
+    }
+
+    @ExceptionHandler(value={NegativeTotalScoreException.class})
+    public ModelAndView handleNegativeValueOfTotalScoreException(NegativeTotalScoreException exception) {
+        return createAndSetupModelAndView(exception);
+    }
+
+    // region helpers
+    private static ModelAndView createAndSetupModelAndView(Exception exception) {
         ModelAndView errorPage = new ModelAndView();
         errorPage.setViewName("error-page");
         errorPage.addObject("errormsg", exception.getMessage());
         return errorPage;
     }
+    // endregion
 }
