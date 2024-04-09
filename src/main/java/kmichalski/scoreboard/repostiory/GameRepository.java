@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface GameRepository extends JpaRepository<Game, Long> {
@@ -17,4 +18,6 @@ public interface GameRepository extends JpaRepository<Game, Long> {
 
     @EntityGraph(value = "game-entity-graph", type = EntityGraph.EntityGraphType.FETCH)
     List<Game> findByGameStatusNot(GameStatus gameStatus);
+
+    Optional<Game> findByIdAndGameStatus(Long gameId, GameStatus gameStatus);
 }
