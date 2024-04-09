@@ -8,12 +8,18 @@
     <!--    <link rel="stylesheet" href="assets/css/style-starter.css">-->
     <link rel="stylesheet" type="text/css"
           th:href="@{/webjars/font-awesome/6.2.0/css/all.css}">
+    <style>
+        .col-custom {
+            flex: 0 0 16.666667%;
+            max-width: 10.666667%;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
     <h1 th:text="'Welcome in Football World Cup Score Board'"></h1>
     <div class="row mt-5 col-2">
-        <a href="/create-new-game" class="btn btn-secondary btn-sm">Add new Game</a>
+        <a href="/create-new-game" class="btn btn-success btn-sm">Add new Game</a>
     </div>
     <div class="row mt-5" th:each="game, iteration: ${unfinishedGames}">
         <div class="col-1">
@@ -33,9 +39,13 @@
                 <button class="btn btn-primary btn-sm" type="submit">Start Game</button>
             </form>
         </div>
-        <div class="col-3" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
-            <a th:href="@{/update-in-progress-game/{gameId}(gameId=${game.id})}" type="button" class="btn btn-primary btn-sm">Update Game</a>
-            <button type="button" class="btn btn-primary btn-sm">Finish Game</button>
+        <div class="col-custom" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
+            <a th:href="@{/update-in-progress-game/{gameId}(gameId=${game.id})}" type="button" class="btn btn-primary btn-sm ">Update Game</a>
+        </div>
+        <div class="col-custom" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
+            <form th:action="@{'/finish-in-progress-game/' + ${game.id}}" method="post">
+                <button class="btn btn-danger btn-sm" type="submit">Finish Game</button>
+            </form>
         </div>
     </div>
 </div>
