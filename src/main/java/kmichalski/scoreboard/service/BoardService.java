@@ -63,7 +63,7 @@ public class BoardService {
     }
 
     private static void validateGameScores(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
-        if(newHomeTeamScore < 0) {
+        if (newHomeTeamScore < 0) {
             throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + gameId);
         }
         if (newAwayTeamScore < 0) {
@@ -73,7 +73,12 @@ public class BoardService {
 
     // TODO: Remember about edge case when. Game can be finished only when in progress
     public Long finishGame(Long gameId) {
-        Game game = gameRepository.findById(gameId).orElseThrow();
+        Game game = gameRepository.findById(gameId).orElseThrow(
+                () -> new NoSuchElementException("Game not found with Id: " + gameId));
+        if (game.getGameStatus() != GameStatus.IN_PROGRESS) {
+            throw new ImproperStatusGameException("It's forbidden to finish game with Id: " + gameId +
+                    "which has other status than IN_PROGRESS. Actual status: " + game.getGameStatus());
+        }
         game.setGameStatus(GameStatus.FINISHED);
         return gameRepository.save(game).getId();
     }

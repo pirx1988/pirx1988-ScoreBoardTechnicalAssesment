@@ -217,4 +217,15 @@ class BoardControllerTest {
         verify(boardService, never()).createNewGame(any(NewGameDto.class));
     }
     // endregion
+
+    // region Finish game
+    @Test
+    void showUpdatedBoardWithoutFinishedGame_whenGameFinishedCorrectly() throws Exception {
+        mockMvc.perform(post("/finish-in-progress-game/" + GAME_ID))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"));
+
+        verify(boardService, times(1)).finishGame(GAME_ID);
+    }
+    // endregion
 }

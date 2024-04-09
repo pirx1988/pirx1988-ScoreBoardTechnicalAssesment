@@ -88,6 +88,13 @@ public class BoardController {
     }
     //endregion
 
+    //region Finish game
+    @PostMapping("/finish-in-progress-game/{gameId}")
+    public String finishInProgressGame(@PathVariable Long gameId) {
+        boardService.finishGame(gameId);
+        return "redirect:/";
+    }
+
     // region helpers
     private void fetchAllTeams(Model model) {
         List<Team> allTeams = teamService.getAllTeams();

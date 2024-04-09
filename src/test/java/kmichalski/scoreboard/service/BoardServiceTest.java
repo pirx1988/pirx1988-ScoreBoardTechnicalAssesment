@@ -138,7 +138,7 @@ class BoardServiceTest {
 
     @SuppressWarnings("unused")
     @ParameterizedTest(name = "[{index}] - {0}")
-    @MethodSource("gameStatusProvider")
+    @MethodSource("startGameStatusProvider")
     void shouldThrowImproperStatusException_whenStarNewGameWithImproperStatus(String testCaseDescription, GameStatus gameStatus) {
         Game game = Mockito.spy(Game.builder().gameStatus(gameStatus).build());
 
@@ -149,7 +149,7 @@ class BoardServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
-    private static Stream<Arguments> gameStatusProvider() {
+    private static Stream<Arguments> startGameStatusProvider() {
         return Stream.of(
                 Arguments.of("Game with InProgress status", GameStatus.IN_PROGRESS),
                 Arguments.of("Game with Finished status", GameStatus.FINISHED)
@@ -186,6 +186,8 @@ class BoardServiceTest {
         verify(gameRepository, never()).save(any(Game.class));
     }
 
+
+
     @Test
     void shouldThrowException_whenAttemptToUpdateAwayTeamScoreWithNegativeValue() {
         // Act
@@ -195,6 +197,8 @@ class BoardServiceTest {
     }
 
     //endregion
+
+    // region Finish game
 
     @Test
     void shouldCorrectlyFinishGame() {
@@ -214,6 +218,36 @@ class BoardServiceTest {
         Game updatedGame = finisheddGameArgumentCaptor.getValue();
         assertThat(updatedGame.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
+    @Test
+    void shouldThrowNoSuchElementException_whenGameToFinishNotFound() {
+        when(gameRepository.findById(GAME_ID)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> service.finishGame(GAME_ID));
+
+        verify(gameRepository, never()).save(any(Game.class));
+    }
+
+    @SuppressWarnings("unused")
+    @ParameterizedTest(name = "[{index}] - {0}")
+    @MethodSource("finishGameStatusProvider")
+    void shouldThrowImproperStatusGameException_whenGameToFinishWitAnotherThanInProgressStatus(String testCaseDescription, GameStatus gameStatus) {
+        Game toFinishGame = Mockito.spy(Game.builder().gameStatus(gameStatus).build());
+
+        when(gameRepository.findById(GAME_ID)).thenReturn(Optional.of(toFinishGame));
+
+        // Act
+        assertThrows(ImproperStatusGameException.class, () -> service.finishGame(GAME_ID));
+        verify(gameRepository, never()).save(any(Game.class));
+    }
+
+    private static Stream<Arguments> finishGameStatusProvider() {
+        return Stream.of(
+                Arguments.of("Game with New status", GameStatus.NEW),
+                Arguments.of("Game with Finished status", GameStatus.FINISHED)
+        );
+    }
+    //endregion
 
     @Test
     void shouldCorrectlyGetInProgressGame() {
