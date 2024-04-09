@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @CheckDifferentTeams
-public class GameDto {
+public class NewGameDto {
     private Long homeTeamId;
     private Long awayTeamId;
 
