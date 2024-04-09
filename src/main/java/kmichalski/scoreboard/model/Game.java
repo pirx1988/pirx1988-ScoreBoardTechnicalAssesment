@@ -19,9 +19,9 @@ import lombok.*;
         subgraphs = {
                 @NamedSubgraph(
                         name = "team-subgraph",
-                        attributeNodes = {
+                        attributeNodes = { // Add attributes you want to fetch eagerly
                                 @NamedAttributeNode("id"),
-                                @NamedAttributeNode("name") // Add other attributes you want to fetch eagerly
+                                @NamedAttributeNode("name")
                         }
                 )
         }

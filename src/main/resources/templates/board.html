@@ -34,18 +34,9 @@
             </form>
         </div>
         <div class="col-3" th:if="${game.gameStatus.toString()=='IN_PROGRESS'}">
-            <button type="button" class="btn btn-primary btn-sm">Update Game</button>
+            <a th:href="@{/update-in-progress-game/{gameId}(gameId=${game.id})}" type="button" class="btn btn-primary btn-sm">Update Game</a>
             <button type="button" class="btn btn-primary btn-sm">Finish Game</button>
         </div>
-        <!--        <div class="col-1">-->
-        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
-        <!--        </div>-->
-        <!--        <div class="col-1">-->
-        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
-        <!--        </div>-->
-        <!--        <div class="col-1">-->
-        <!--            <button type="button" class="btn btn-primary btn-sm">Primary</button>-->
-        <!--        </div>-->
     </div>
 </div>
 
