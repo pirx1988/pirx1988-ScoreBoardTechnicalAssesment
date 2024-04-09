@@ -1,6 +1,6 @@
 package kmichalski.scoreboard.service;
 
-import kmichalski.scoreboard.dto.GameDto;
+import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
@@ -56,13 +56,13 @@ public class BoardServiceIntegrationTest {
 
         long homeTeamId = teamRepository.save(homeTeam).getId();
         long awayTeamId = teamRepository.save(awayTeam).getId();
-        GameDto gameDto = GameDto.builder()
+        NewGameDto newgameDto = NewGameDto.builder()
                 .homeTeamId(homeTeamId)
                 .awayTeamId(awayTeamId)
                 .build();
 
         // Act
-        boardService.createNewGame(gameDto);
+        boardService.createNewGame(newgameDto);
 
         List<Game> savedGames = gameRepository.findAll();
         assertEquals(1, savedGames.size());

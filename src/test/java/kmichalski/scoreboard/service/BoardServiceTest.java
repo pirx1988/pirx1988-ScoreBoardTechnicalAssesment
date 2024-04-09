@@ -1,13 +1,13 @@
 package kmichalski.scoreboard.service;
 
-import kmichalski.scoreboard.dto.GameDto;
+import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
+import kmichalski.scoreboard.exception.NegativeTeamScoreException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -45,7 +45,7 @@ class BoardServiceTest {
 
     @Test
     void shouldProperlyCreateNewGame() {
-        GameDto gameDto = GameDto.builder()
+        NewGameDto newgameDto = NewGameDto.builder()
                 .homeTeamId(HOME_TEAM_ID)
                 .awayTeamId(AWAY_TEAM_ID)
                 .build();
@@ -58,7 +58,7 @@ class BoardServiceTest {
         when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.of(awayTeam));
 
         // Act
-        service.createNewGame(gameDto);
+        service.createNewGame(newgameDto);
 
         ArgumentCaptor<Game> newGameArgumentCaptor = ArgumentCaptor.forClass(Game.class);
 
@@ -74,7 +74,7 @@ class BoardServiceTest {
 
     @Test
     void shouldThrowNoSuchElementException_whenAttemptToCreateGameWhilstHomeTeamNotExists() {
-        GameDto gameDto = GameDto.builder()
+        NewGameDto newgameDto = NewGameDto.builder()
                 .homeTeamId(HOME_TEAM_ID)
                 .awayTeamId(AWAY_TEAM_ID)
                 .build();
@@ -82,14 +82,14 @@ class BoardServiceTest {
         when(teamRepository.findById(HOME_TEAM_ID)).thenReturn(Optional.empty());
 
         // Act
-        assertThrows(NoSuchElementException.class, () -> service.createNewGame(gameDto));
-        verify(teamRepository,times(1)).findById(HOME_TEAM_ID);
+        assertThrows(NoSuchElementException.class, () -> service.createNewGame(newgameDto));
+        verify(teamRepository, times(1)).findById(HOME_TEAM_ID);
         verifyNoInteractions(gameRepository);
     }
 
     @Test
     void shouldThrowNoSuchElementException_whenAttemptToCreateGameWhilstAwayTeamNotExists() {
-        GameDto gameDto = GameDto.builder()
+        NewGameDto newgameDto = NewGameDto.builder()
                 .homeTeamId(HOME_TEAM_ID)
                 .awayTeamId(AWAY_TEAM_ID)
                 .build();
@@ -100,9 +100,9 @@ class BoardServiceTest {
         when(teamRepository.findById(AWAY_TEAM_ID)).thenReturn(Optional.empty());
 
         // Act
-        assertThrows(NoSuchElementException.class, () -> service.createNewGame(gameDto));
-        verify(teamRepository,times(1)).findById(HOME_TEAM_ID);
-        verify(teamRepository,times(1)).findById(AWAY_TEAM_ID);
+        assertThrows(NoSuchElementException.class, () -> service.createNewGame(newgameDto));
+        verify(teamRepository, times(1)).findById(HOME_TEAM_ID);
+        verify(teamRepository, times(1)).findById(AWAY_TEAM_ID);
         verifyNoInteractions(gameRepository);
     }
 
@@ -156,6 +156,8 @@ class BoardServiceTest {
         );
     }
 
+    // region Update game
+
     @Test
     void shouldCorrectlyUpdateAlreadyStartedGame() {
         Game game = Mockito.spy(Game.builder().gameStatus(GameStatus.IN_PROGRESS).build());
@@ -176,6 +178,25 @@ class BoardServiceTest {
     }
 
     @Test
+    // TODO Add validation rule about check if score is also integer and not String for example
+    void shouldThrowException_whenAttemptToUpdateHomeTeamScoreWithNegativeValue() {
+        // Act
+        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(GAME_ID,-1,1));
+        verify(gameRepository,never()).findById(GAME_ID);
+        verify(gameRepository, never()).save(any(Game.class));
+    }
+
+    @Test
+    void shouldThrowException_whenAttemptToUpdateAwayTeamScoreWithNegativeValue() {
+        // Act
+        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(GAME_ID,10,-1));
+        verify(gameRepository,never()).findById(GAME_ID);
+        verify(gameRepository, never()).save(any(Game.class));
+    }
+
+    //endregion
+
+    @Test
     void shouldCorrectlyFinishGame() {
         Game game = Mockito.spy(Game.builder().gameStatus(GameStatus.IN_PROGRESS).build());
 
@@ -192,5 +213,25 @@ class BoardServiceTest {
 
         Game updatedGame = finisheddGameArgumentCaptor.getValue();
         assertThat(updatedGame.getGameStatus()).isEqualTo(GameStatus.FINISHED);
+    }
+
+    @Test
+    void shouldCorrectlyGetInProgressGame() {
+        when(gameRepository.findByIdAndGameStatus(GAME_ID, GameStatus.IN_PROGRESS)).thenReturn(Optional.of(Mockito.mock(Game.class)));
+
+        // Act
+        service.getInProgressGame(GAME_ID);
+
+        verify(gameRepository, times(1)).findByIdAndGameStatus(GAME_ID, GameStatus.IN_PROGRESS);
+    }
+
+    @Test
+    void shouldThrowExceptionWhenAttemptToGetInProgressGameWhichNotExists() {
+        when(gameRepository.findByIdAndGameStatus(GAME_ID, GameStatus.IN_PROGRESS)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> service.getInProgressGame(GAME_ID));
+
+        verify(gameRepository, never()).save(any(Game.class));
     }
 }
