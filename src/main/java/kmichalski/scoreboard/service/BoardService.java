@@ -82,6 +82,11 @@ public class BoardService {
         game.setGameStatus(GameStatus.FINISHED);
         return gameRepository.save(game).getId();
     }
+    // region games by total score
+    public List<Game> getGamesByTotalScore(int totalScore) {
+        return gameRepository.findInProgressGamesByTotalScore(totalScore);
+    }
+    //endregion
 
     public List<Game> getAllUnfinishedGames() {
         return gameRepository.findByGameStatusNot(GameStatus.FINISHED);

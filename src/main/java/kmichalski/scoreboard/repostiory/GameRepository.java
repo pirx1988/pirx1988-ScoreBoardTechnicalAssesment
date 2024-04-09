@@ -4,6 +4,7 @@ import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -20,4 +21,8 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     List<Game> findByGameStatusNot(GameStatus gameStatus);
 
     Optional<Game> findByIdAndGameStatus(Long gameId, GameStatus gameStatus);
+
+    @EntityGraph(value = "game-entity-graph", type = EntityGraph.EntityGraphType.FETCH)
+    @Query("SELECT g FROM Game g WHERE g.gameStatus = kmichalski.scoreboard.model.GameStatus.IN_PROGRESS AND (g.homeTeamScore + g.awayTeamScore = :totalScore)")
+    List<Game> findInProgressGamesByTotalScore(int totalScore);
 }
