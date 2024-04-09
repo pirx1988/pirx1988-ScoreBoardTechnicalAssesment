@@ -1,22 +1,18 @@
 package kmichalski.scoreboard.controller;
 
 import jakarta.validation.Valid;
-import kmichalski.scoreboard.dto.GameDto;
+import kmichalski.scoreboard.dto.NewGameDto;
+import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.model.Game;
-import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.service.BoardService;
 import kmichalski.scoreboard.service.TeamService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.Banner;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -29,9 +25,9 @@ public class BoardController {
     private final TeamService teamService;
 
     //region Get mapping
-    @GetMapping(value={"","/","/board"})
-    public String displayBoardPage (Model model) {
-        List<Game> unfinishedGames =  boardService.getAllUnfinishedGames();
+    @GetMapping(value = {"", "/", "/board"})
+    public String displayBoardPage(Model model) {
+        List<Game> unfinishedGames = boardService.getAllUnfinishedGames();
         model.addAttribute("unfinishedGames", unfinishedGames);
         return "board.html";
     }
@@ -39,7 +35,7 @@ public class BoardController {
     @GetMapping("/create-new-game")
     public String displayCreateNewGame(Model model) {
         fetchAllTeams(model);
-        model.addAttribute("newGame", new GameDto());
+        model.addAttribute("newGame", new NewGameDto());
         return "create_new_game.html";
     }
     //endregion
@@ -53,7 +49,7 @@ public class BoardController {
     }
 
     @PostMapping("/create-new-game")
-    public String createNewGame(@Valid @ModelAttribute("newGame") GameDto game, Errors errors, RedirectAttributes redirectAttributes, Model model) {
+    public String createNewGame(@Valid @ModelAttribute("newGame") NewGameDto game, Errors errors, RedirectAttributes redirectAttributes, Model model) {
         if (errors.hasErrors()) {
             log.error("Create new game form validation failed due to: " + errors);
             fetchAllTeams(model);
@@ -62,10 +58,41 @@ public class BoardController {
         boardService.createNewGame(game);
         return "redirect:/";
     }
+    //endregion
 
+    // region Update game
+    @GetMapping("/update-in-progress-game/{gameId}")
+    public String displayUpdateGame(Model model, @PathVariable long gameId) {
+        Game inProgressGame = boardService.getInProgressGame(gameId);
+        UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                .id(inProgressGame.getId())
+                .homeTeamScore(inProgressGame.getHomeTeamScore())
+                .awayTeamScore(inProgressGame.getAwayTeamScore())
+                .build();
+        model.addAttribute("updateGame", updateGameDto);
+        model.addAttribute("homeTeamName", inProgressGame.getHomeTeam().getName());
+        model.addAttribute("awayTeamName", inProgressGame.getAwayTeam().getName());
+        return "update_game.html";
+    }
+
+    @PostMapping("/update-in-progress-game/{gameId}")
+    // TODO: Add additional check if scores are bigger than 0 because of flag spring.mvc.validation.enabled=false
+    // which can easily switch of in application.properties
+    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes, Model model, @PathVariable Long gameId) {
+        if (errors.hasErrors()) {
+            log.error("Updated new game form validation failed due to: " + errors);
+            return "update_game.html";
+        }
+        boardService.updateGame(gameId, updatedGame.getHomeTeamScore(), updatedGame.getAwayTeamScore());
+        return "redirect:/";
+    }
+    //endregion
+
+    // region helpers
     private void fetchAllTeams(Model model) {
         List<Team> allTeams = teamService.getAllTeams();
         model.addAttribute("allTeams", allTeams);
     }
     //endregion
+
 }

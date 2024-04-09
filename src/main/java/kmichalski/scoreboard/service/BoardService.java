@@ -1,7 +1,8 @@
 package kmichalski.scoreboard.service;
 
-import kmichalski.scoreboard.dto.GameDto;
+import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
+import kmichalski.scoreboard.exception.NegativeTeamScoreException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
@@ -21,12 +22,12 @@ public class BoardService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
 
-    public Game createNewGame(GameDto gameDto) {
-        Team savedHomeTeam = teamRepository.findById(gameDto.getHomeTeamId()).orElseThrow(
-                () -> new NoSuchElementException("Team not found with Id: " + gameDto.getHomeTeamId())
+    public Game createNewGame(NewGameDto newgameDto) {
+        Team savedHomeTeam = teamRepository.findById(newgameDto.getHomeTeamId()).orElseThrow(
+                () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getHomeTeamId())
         );
-        Team savedAwayTeam = teamRepository.findById(gameDto.getAwayTeamId()).orElseThrow(
-                () -> new NoSuchElementException("Team not found with Id: " + gameDto.getAwayTeamId())
+        Team savedAwayTeam = teamRepository.findById(newgameDto.getAwayTeamId()).orElseThrow(
+                () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getAwayTeamId())
         );
         Game newGame = Game.builder()
                 .gameStatus(GameStatus.NEW)
@@ -54,10 +55,20 @@ public class BoardService {
     }
 
     public Game updateGame(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
+        validateGameScores(gameId, newHomeTeamScore, newAwayTeamScore);
         Game game = gameRepository.findById(gameId).orElseThrow();
         game.setHomeTeamScore(newHomeTeamScore);
         game.setAwayTeamScore(newAwayTeamScore);
         return gameRepository.save(game);
+    }
+
+    private static void validateGameScores(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
+        if(newHomeTeamScore < 0) {
+            throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + gameId);
+        }
+        if (newAwayTeamScore < 0) {
+            throw new NegativeTeamScoreException("Negative Away Team score for gameId: " + gameId);
+        }
     }
 
     // TODO: Remember about edge case when. Game can be finished only when in progress
@@ -69,5 +80,11 @@ public class BoardService {
 
     public List<Game> getAllUnfinishedGames() {
         return gameRepository.findByGameStatusNot(GameStatus.FINISHED);
+    }
+
+    public Game getInProgressGame(long gameId) { // TODO: Consider check status as well or change method name to just getGame
+        return gameRepository.findByIdAndGameStatus(gameId, GameStatus.IN_PROGRESS).orElseThrow(
+                () -> new NoSuchElementException("Game not found with Id: " + gameId)
+        );
     }
 }
