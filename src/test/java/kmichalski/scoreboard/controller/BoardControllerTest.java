@@ -33,9 +33,11 @@ class BoardControllerTest {
     private static final Long HOME_TEAM_ID = 1L;
     private static final Long AWAY_TEAM_ID = 2L;
     private static final long GAME_ID = 3L;
-
     private static final Integer UPDATED_HOME_TEAM_SCORE = 3;
     private static final Integer UPDATED_AWAY_TEAM_SCORE = 4;
+    private static final Integer TOTAL_SCORE = 10;
+    private static final Integer NEGATIVE_TOTAL_SCORE = -10;
+    private static String TOTAL_SCORE_IN_INCORRECT_FORMAT = "abc10";
 
     @MockBean
     private BoardService boardService;
@@ -51,23 +53,53 @@ class BoardControllerTest {
         reset(boardService);
     }
 
+    // region display board
     @Test
-    void showBoardWithGames() throws Exception {
-        Team homeTeam = Team.builder().name("Poland").build();
-        Team awayTeam = Team.builder().name("England").build();
-        Game game = Game.builder()
-                .homeTeam(homeTeam)
-                .awayTeam(awayTeam)
-                .homeTeamScore(0)
-                .awayTeamScore(0)
-                .gameStatus(GameStatus.IN_PROGRESS).build();
+    void showBoardWithAllUnfinishedGames_whenNoTotalScoreFilter() throws Exception {
+        Game game = createGame();
         when(boardService.getAllUnfinishedGames()).thenReturn(List.of(game));
 
         mockMvc.perform(get("/"))
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("unfinishedGames"))
                 .andExpect(view().name("board.html"));
+        verify(boardService, times(1)).getAllUnfinishedGames();
+        verify(boardService, never()).getGamesByTotalScore(anyInt());
     }
+
+    @Test
+    void showBoardWithFilteredUnfinishedGamesByTotalScore_whenCorrectTotalScoreFilterValuePassed() throws Exception {
+        Game game = createGame();
+        when(boardService.getGamesByTotalScore(TOTAL_SCORE)).thenReturn(List.of(game));
+
+        mockMvc.perform(get("/?total_score=" + TOTAL_SCORE))
+                .andExpect(status().isOk())
+                .andExpect(model().attributeExists("unfinishedGames"))
+                .andExpect(view().name("board.html"));
+        verify(boardService, times(1)).getGamesByTotalScore(TOTAL_SCORE);
+        verify(boardService, never()).getAllUnfinishedGames();
+    }
+
+    @Test
+    void showErrorPage_whenWhenAttemptToPassNegativeTotalScoreInQueryStringToBoardView() throws Exception {
+        mockMvc.perform(get("/?total_score=" + NEGATIVE_TOTAL_SCORE))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error-page"))
+                .andExpect(model().attribute("errormsg", "Total score cannot be negative number. Passed value: " + NEGATIVE_TOTAL_SCORE));
+        verify(boardService, never()).getGamesByTotalScore(NEGATIVE_TOTAL_SCORE);
+        verify(boardService, never()).getAllUnfinishedGames();
+    }
+
+    @Test
+    void showErrorPage_whenWhenAttemptToPassTotalScoreUnableToParseAsIntegerFormatInQueryStringToBoardView() throws Exception {
+        mockMvc.perform(get("/?total_score=" + TOTAL_SCORE_IN_INCORRECT_FORMAT))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error-page"))
+                .andExpect(model().attribute("errormsg", "Total score must be in a valid format number. Passed value: " + TOTAL_SCORE_IN_INCORRECT_FORMAT));
+        verify(boardService, never()).getGamesByTotalScore(anyInt());
+        verify(boardService, never()).getAllUnfinishedGames();
+    }
+    //endregion
 
     @Test
     void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
@@ -228,4 +260,18 @@ class BoardControllerTest {
         verify(boardService, times(1)).finishGame(GAME_ID);
     }
     // endregion
+
+    // region helpers
+    private static Game createGame() {
+        Team homeTeam = Team.builder().name("Poland").build();
+        Team awayTeam = Team.builder().name("England").build();
+        return Game.builder()
+                .homeTeam(homeTeam)
+                .awayTeam(awayTeam)
+                .homeTeamScore(0)
+                .awayTeamScore(0)
+                .id(GAME_ID)
+                .gameStatus(GameStatus.IN_PROGRESS).build();
+    }
+    //endregion
 }

@@ -3,6 +3,8 @@ package kmichalski.scoreboard.controller;
 import jakarta.validation.Valid;
 import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.dto.UpdateGameDto;
+import kmichalski.scoreboard.exception.IncorrectTotalScoreFormatException;
+import kmichalski.scoreboard.exception.NegativeTotalScoreException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.service.BoardService;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @Slf4j
@@ -26,10 +29,39 @@ public class BoardController {
 
     //region Get mapping
     @GetMapping(value = {"", "/", "/board"})
-    public String displayBoardPage(Model model) {
-        List<Game> unfinishedGames = boardService.getAllUnfinishedGames();
+    public String displayBoardPage(
+            Model model,
+            @RequestParam(name = "total_score", required = false) String totalScoreParam
+    ) {
+        Integer totalScore = Optional.ofNullable(totalScoreParam)
+                .map(this::parseTotalScoreInteger)
+                .orElse(null);
+
+        // Apply positive total score validation to ensure totalScore is positive when totalScore is not null
+        if (totalScore != null) {
+            validateNoNegativeTotalScore(totalScore);
+        }
+
+        List<Game> unfinishedGames = Optional.ofNullable(totalScore)
+                .map(boardService::getGamesByTotalScore)
+                .orElseGet(boardService::getAllUnfinishedGames);
+
         model.addAttribute("unfinishedGames", unfinishedGames);
         return "board.html";
+    }
+
+    private Integer parseTotalScoreInteger(String totalScore) {
+        try {
+            return Integer.parseInt(totalScore);
+        } catch (NumberFormatException e) {
+            throw new IncorrectTotalScoreFormatException("Total score must be in a valid format number. Passed value: " + totalScore);
+        }
+    }
+
+    private void validateNoNegativeTotalScore(Integer totalScore) {
+        if (totalScore < 0) {
+            throw new NegativeTotalScoreException("Total score cannot be negative number. Passed value: " + totalScore);
+        }
     }
 
     @GetMapping("/create-new-game")
