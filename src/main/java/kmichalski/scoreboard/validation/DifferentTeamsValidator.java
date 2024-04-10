@@ -8,6 +8,6 @@ import kmichalski.scoreboard.dto.NewGameDto;
 public class DifferentTeamsValidator implements ConstraintValidator<CheckDifferentTeams, NewGameDto> {
     @Override
     public boolean isValid(NewGameDto game, ConstraintValidatorContext context) {
-        return game.getHomeTeamId() != game.getAwayTeamId();
+        return !game.getHomeTeamId().equals(game.getAwayTeamId());
     }
 }
