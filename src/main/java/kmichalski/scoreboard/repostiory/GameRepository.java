@@ -23,6 +23,8 @@ public interface GameRepository extends JpaRepository<Game, Long> {
     Optional<Game> findByIdAndGameStatus(Long gameId, GameStatus gameStatus);
 
     @EntityGraph(value = "game-entity-graph", type = EntityGraph.EntityGraphType.FETCH)
-    @Query("SELECT g FROM Game g WHERE g.gameStatus = kmichalski.scoreboard.model.GameStatus.IN_PROGRESS AND (g.homeTeamScore + g.awayTeamScore = :totalScore)")
+    @Query("SELECT g FROM Game g WHERE g.gameStatus = kmichalski.scoreboard.model.GameStatus.IN_PROGRESS " +
+            "AND (g.homeTeamScore + g.awayTeamScore = :totalScore)" +
+            " ORDER BY g.createdAt desc")
     List<Game> findInProgressGamesByTotalScore(int totalScore);
 }

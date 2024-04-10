@@ -12,11 +12,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -148,19 +150,23 @@ public class BoardServiceIntegrationTest {
 
 
     @Nested
-    class GamesByTotalScoreTests {
+    public class GamesByTotalScoreTests {
         @Test
         void shouldReturnInProgressGameWithTheSameTotalScore() {
             createGameWithScore("t1", "t2", 1, 2, GameStatus.IN_PROGRESS);
-            createGameWithScore("t3", "t4", 2, 2, GameStatus.IN_PROGRESS);
-            createGameWithScore("t5", "t6", 3, 1, GameStatus.IN_PROGRESS);
             createGameWithScore("t5", "t6", 1, 3, GameStatus.FINISHED);
+            Game gamInProgressWithExpectedTotalScore1 = createGameWithScore("t3", "t4", 2, 2, GameStatus.IN_PROGRESS);
+            Game gamInProgressWithExpectedTotalScore2 = createGameWithScore("t5", "t6", 3, 1, GameStatus.IN_PROGRESS);
+            List<Game> expectedInProgressGamesByTotalScore = List.of(gamInProgressWithExpectedTotalScore2, gamInProgressWithExpectedTotalScore1);
 
             // Act
             final int TOTAL_SCORE = 4;
-            List<Game> inProgressGamesByTotalScore = gameRepository.findInProgressGamesByTotalScore(TOTAL_SCORE);
+            List<Game> actualInProgressGamesByTotalScore = gameRepository.findInProgressGamesByTotalScore(TOTAL_SCORE);
 
-            assertEquals(2, inProgressGamesByTotalScore.size());
+            assertEquals(2, actualInProgressGamesByTotalScore.size());
+            // verify if games are correctly fetched by TOTAL_SCORE and correctly ordered in descending mode by the most recently added to the system
+            assertThat(actualInProgressGamesByTotalScore)
+                    .containsExactlyElementsOf(expectedInProgressGamesByTotalScore);
         }
 
         private Game createGameWithScore(String homeTeamName, String awayTeamName, int homeTeamScore, int awayTeamScore, GameStatus status) {
