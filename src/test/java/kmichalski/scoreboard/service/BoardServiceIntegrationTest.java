@@ -42,7 +42,7 @@ public class BoardServiceIntegrationTest {
     }
 
     @Nested
-    class GameCrudOperationTests {
+    class GameRelatedCrudOperationTests {
         private static final int NEW_HOME_TEAM_SCORE = 5;
         private static final int NEW_AWAY_TEAM_SCORE = 4;
         private Team homeTeam;
@@ -101,16 +101,6 @@ public class BoardServiceIntegrationTest {
         }
 
         @Test
-        void shouldThrowImproperGameStatusException_whenAttemptToStartGameWithImproperStatus() {
-            // TODO: Write integration test
-        }
-
-        @Test
-        void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists() {
-            // TODO: Write integration test
-        }
-
-        @Test
         void shouldCorrectlyUpdateGame() {
             teamRepository.save(homeTeam);
             teamRepository.save(awayTeam);
@@ -161,7 +151,6 @@ public class BoardServiceIntegrationTest {
     class GamesByTotalScoreTests {
         @Test
         void shouldReturnInProgressGameWithTheSameTotalScore() {
-
             createGameWithScore("t1", "t2", 1, 2, GameStatus.IN_PROGRESS);
             createGameWithScore("t3", "t4", 2, 2, GameStatus.IN_PROGRESS);
             createGameWithScore("t5", "t6", 3, 1, GameStatus.IN_PROGRESS);
@@ -186,7 +175,5 @@ public class BoardServiceIntegrationTest {
                     .build();
             return gameRepository.save(game);
         }
-
-
     }
 }
