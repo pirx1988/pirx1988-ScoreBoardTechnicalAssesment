@@ -13,5 +13,4 @@ import lombok.*;
 public class NewGameDto {
     private Long homeTeamId;
     private Long awayTeamId;
-
 }
