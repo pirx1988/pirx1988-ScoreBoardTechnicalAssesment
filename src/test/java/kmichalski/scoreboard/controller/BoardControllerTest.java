@@ -39,19 +39,16 @@ class BoardControllerTest {
 
     @MockBean
     private BoardService boardService;
-
     @MockBean
     private TeamService teamService;
-
     @Autowired
     MockMvc mockMvc;
-
     @AfterEach
     void tearDown() {
         reset(boardService);
     }
 
-    // region display board
+    // region Display board
     @Test
     void showBoardWithAllUnfinishedGames_whenNoTotalScoreFilter() throws Exception {
         Game game = createGame();
@@ -100,38 +97,7 @@ class BoardControllerTest {
     }
     //endregion
 
-    // region start game
-    @Test
-    void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
-        mockMvc.perform(post("/start-game/123"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(view().name("redirect:/"));
-    }
-
-    @Test
-    void showErrorPage_whenAttemptToStartGameWithImproperStatus() throws Exception {
-        doThrow(new ImproperStatusGameException("Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"))
-                .when(boardService).startNewGame(GAME_ID);
-
-        mockMvc.perform(post("/start-game/" + GAME_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name("error-page"))
-                .andExpect(model().attribute("errormsg", "Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"));
-    }
-
-    @Test
-    void showErrorPage_whenAttemptToStartGameWhichNotExists() throws Exception {
-        doThrow(new NoSuchElementException("Game not found with Id: " + GAME_ID))
-                .when(boardService).startNewGame(GAME_ID);
-
-        mockMvc.perform(post("/start-game/" + GAME_ID))
-                .andExpect(status().isOk())
-                .andExpect(view().name("error-page"))
-                .andExpect(model().attribute("errormsg", "Game not found with Id: " + GAME_ID));
-    }
-    // endregion
-
-    // region Create game
+    // region Create new game
     @Test
     void redirectToBoardView_whenNewGameCorrectlyCreated() throws Exception {
         mockMvc.perform(post("/create-new-game")
@@ -169,6 +135,37 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Team not found with Id: " + HOME_TEAM_ID));
+    }
+    // endregion
+
+    // region Start game
+    @Test
+    void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
+        mockMvc.perform(post("/start-game/123"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(view().name("redirect:/"));
+    }
+
+    @Test
+    void showErrorPage_whenAttemptToStartGameWithImproperStatus() throws Exception {
+        doThrow(new ImproperStatusGameException("Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"))
+                .when(boardService).startNewGame(GAME_ID);
+
+        mockMvc.perform(post("/start-game/" + GAME_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error-page"))
+                .andExpect(model().attribute("errormsg", "Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"));
+    }
+
+    @Test
+    void showErrorPage_whenAttemptToStartGameWhichNotExists() throws Exception {
+        doThrow(new NoSuchElementException("Game not found with Id: " + GAME_ID))
+                .when(boardService).startNewGame(GAME_ID);
+
+        mockMvc.perform(post("/start-game/" + GAME_ID))
+                .andExpect(status().isOk())
+                .andExpect(view().name("error-page"))
+                .andExpect(model().attribute("errormsg", "Game not found with Id: " + GAME_ID));
     }
     // endregion
 

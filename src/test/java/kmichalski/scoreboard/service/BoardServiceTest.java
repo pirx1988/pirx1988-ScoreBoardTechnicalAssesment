@@ -36,12 +36,12 @@ class BoardServiceTest {
     private static final long AWAY_TEAM_ID = 2L;
     @Mock
     GameRepository gameRepository;
-
     @Mock
     TeamRepository teamRepository;
-
     @InjectMocks
     BoardService service;
+
+    // region Create new game
 
     @Test
     void shouldProperlyCreateNewGame() {
@@ -105,7 +105,9 @@ class BoardServiceTest {
         verify(teamRepository, times(1)).findById(AWAY_TEAM_ID);
         verifyNoInteractions(gameRepository);
     }
+    //endregion
 
+    // region Start game
     @Test
     void shouldCorrectlyStartGame_whenChangedFromNewToStarted() {
         Game game = Mockito.spy(Game.builder().build());
@@ -157,6 +159,7 @@ class BoardServiceTest {
                 Arguments.of("Game with Finished status", GameStatus.FINISHED)
         );
     }
+    // endregion
 
     // region Update game
 
@@ -248,6 +251,7 @@ class BoardServiceTest {
     }
     //endregion
 
+    //region Fetch in progress game
     @Test
     void shouldCorrectlyGetInProgressGame() {
         when(gameRepository.findByIdAndGameStatus(GAME_ID, GameStatus.IN_PROGRESS)).thenReturn(Optional.of(Mockito.mock(Game.class)));
@@ -267,4 +271,5 @@ class BoardServiceTest {
 
         verify(gameRepository, never()).save(any(Game.class));
     }
+    // endregion
 }
