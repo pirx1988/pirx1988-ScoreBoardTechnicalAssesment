@@ -1,6 +1,6 @@
 ## Requirements
 In order to run the application you will need Maven project management tool available under the link: https://maven.apache.org/.
-Application has been written in Java with jdk 17. This version or never is required to start application. Application uses
+Application has been written in Java with jdk 17 in Spring boot 3.2.4. This version or never is required to start application. Application uses
 in memory H2 database. 
 ## Setup
 ### Start application
