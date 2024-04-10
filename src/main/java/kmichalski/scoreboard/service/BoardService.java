@@ -96,7 +96,7 @@ public class BoardService {
     }
     //endregion
 
-    //region validation helpers
+    //region Validation helpers
     private static void validateGameScores(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
         if (newHomeTeamScore < 0) {
             throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + gameId);
