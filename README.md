@@ -55,7 +55,7 @@ mvn clean test
 - Every game is associated with one of 3 statuses: NEW, IN_PROGRESS, FINISHED defined in `src/main/java/kmichalski/scoreboard/model/GameStatus.java`
 - Once user finish the game then it's removed from the board. Under the hood status is changed to FINISHED. Board shows games with NEW or IN_PROGRESS statuses
 - Summary by total scores filters Games among games with IN_PROGRESS status only and is handled by passing query string `total_score`. For example: http://localhost:8080/?total_score=2 
-will show all IN_PROGRESS games where total score is equal 2 
+will show all IN_PROGRESS games where total score is equal 2. outcome list of games is ordered by the most recently added to system. 
 - Clear button causes deletion of total_score filter and renders board without filtering: http://localhost:8080/ - not started 
 games with status NEW should be visible again
 - In GameRepository `@EntityGraph` annotation has been applied in order to optimize sql queries, avoid N+1 problem
