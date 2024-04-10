@@ -27,7 +27,7 @@ public class BoardController {
     private final BoardService boardService;
     private final TeamService teamService;
 
-    //region Get mapping
+    //region Board
     @GetMapping(value = {"", "/", "/board"})
     public String displayBoardPage(
             Model model,
@@ -49,35 +49,14 @@ public class BoardController {
         model.addAttribute("unfinishedGames", unfinishedGames);
         return "board.html";
     }
+    //endregion
 
-    private Integer parseTotalScoreInteger(String totalScore) {
-        try {
-            return Integer.parseInt(totalScore);
-        } catch (NumberFormatException e) {
-            throw new IncorrectTotalScoreFormatException("Total score must be in a valid format number. Passed value: " + totalScore);
-        }
-    }
-
-    private void validateNoNegativeTotalScore(Integer totalScore) {
-        if (totalScore < 0) {
-            throw new NegativeTotalScoreException("Total score cannot be negative number. Passed value: " + totalScore);
-        }
-    }
-
+    //region Create new game
     @GetMapping("/create-new-game")
     public String displayCreateNewGame(Model model) {
         fetchAllTeams(model);
         model.addAttribute("newGame", new NewGameDto());
         return "create_new_game.html";
-    }
-    //endregion
-
-    //region Post mapping
-
-    @PostMapping("/start-game/{gameId}")
-    public String startGame(@PathVariable long gameId) {
-        boardService.startNewGame(gameId);
-        return "redirect:/"; // Redirect to board view: after starting the game
     }
 
     @PostMapping("/create-new-game")
@@ -90,6 +69,15 @@ public class BoardController {
         boardService.createNewGame(game);
         return "redirect:/";
     }
+    //endregion
+
+    //region Start new game
+    @PostMapping("/start-game/{gameId}")
+    public String startGame(@PathVariable long gameId) {
+        boardService.startNewGame(gameId);
+        return "redirect:/"; // Redirect to board view: after starting the game
+    }
+
     //endregion
 
     // region Update game
@@ -124,11 +112,26 @@ public class BoardController {
         boardService.finishGame(gameId);
         return "redirect:/";
     }
+    //endregion
 
     // region helpers
+    private void validateNoNegativeTotalScore(Integer totalScore) {
+        if (totalScore < 0) {
+            throw new NegativeTotalScoreException("Total score cannot be negative number. Passed value: " + totalScore);
+        }
+    }
+
     private void fetchAllTeams(Model model) {
         List<Team> allTeams = teamService.getAllTeams();
         model.addAttribute("allTeams", allTeams);
+    }
+
+    private Integer parseTotalScoreInteger(String totalScore) {
+        try {
+            return Integer.parseInt(totalScore);
+        } catch (NumberFormatException e) {
+            throw new IncorrectTotalScoreFormatException("Total score must be in a valid format number. Passed value: " + totalScore);
+        }
     }
     //endregion
 
