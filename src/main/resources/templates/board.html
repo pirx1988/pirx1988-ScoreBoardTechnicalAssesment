@@ -8,12 +8,6 @@
         <link rel="stylesheet" href="assets/css/style-starter.css">
     <link rel="stylesheet" type="text/css"
           th:href="@{/webjars/font-awesome/6.2.0/css/all.css}">
-    <style>
-        .col-custom {
-            flex: 0 0 16.666667%;
-            max-width: 10.666667%;
-        }
-    </style>
 </head>
 <body>
 <div class="container">
@@ -21,7 +15,8 @@
     <div id="total_score" class="mt-3 row">
         <form th:action="@{/}" method="get" class="mt-3 col-3 p-0">
             <div class="input-group">
-                <input min="0" type="number" id="integerInput" name="total_score" class="form-control" placeholder="Summary by total score" th:value="${param.total_score}">
+                <input min="0" type="number" id="integerInput" name="total_score" class="form-control"
+                       placeholder="Summary by total score" th:value="${param.total_score}" required>
                 <div class="input-group-append">
                     <button class="btn btn-outline-secondary m-l-3" type="submit">Filter</button>
                 </div>
