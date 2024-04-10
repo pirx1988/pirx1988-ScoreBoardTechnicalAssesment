@@ -108,8 +108,6 @@ public class BoardController {
     }
 
     @PostMapping("/update-in-progress-game/{gameId}")
-    // TODO: Add additional check if scores are bigger than 0 because of flag spring.mvc.validation.enabled=false
-    // which can easily switch of in application.properties
     public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes, Model model, @PathVariable Long gameId) {
         if (errors.hasErrors()) {
             log.error("Updated new game form validation failed due to: " + errors);

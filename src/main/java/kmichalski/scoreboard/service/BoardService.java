@@ -71,7 +71,6 @@ public class BoardService {
         }
     }
 
-    // TODO: Remember about edge case when. Game can be finished only when in progress
     public Long finishGame(Long gameId) {
         Game game = gameRepository.findById(gameId).orElseThrow(
                 () -> new NoSuchElementException("Game not found with Id: " + gameId));

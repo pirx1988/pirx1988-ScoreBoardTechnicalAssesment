@@ -178,15 +178,12 @@ class BoardServiceTest {
     }
 
     @Test
-    // TODO Add validation rule about check if score is also integer and not String for example
     void shouldThrowException_whenAttemptToUpdateHomeTeamScoreWithNegativeValue() {
         // Act
         assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(GAME_ID,-1,1));
         verify(gameRepository,never()).findById(GAME_ID);
         verify(gameRepository, never()).save(any(Game.class));
     }
-
-
 
     @Test
     void shouldThrowException_whenAttemptToUpdateAwayTeamScoreWithNegativeValue() {

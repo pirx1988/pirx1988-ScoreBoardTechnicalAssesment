@@ -28,7 +28,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(MockitoExtension.class)
 @WebMvcTest(controllers = {BoardController.class})
 @ContextConfiguration(classes = {BoardController.class, GlobalExceptionController.class})
-// TODO Consider Dirty Context After class in order to speed test working
 class BoardControllerTest {
     private static final Long HOME_TEAM_ID = 1L;
     private static final Long AWAY_TEAM_ID = 2L;
@@ -37,7 +36,6 @@ class BoardControllerTest {
     private static final Integer UPDATED_AWAY_TEAM_SCORE = 4;
     private static final Integer TOTAL_SCORE = 10;
     private static final Integer NEGATIVE_TOTAL_SCORE = -10;
-    private static String TOTAL_SCORE_IN_INCORRECT_FORMAT = "abc10";
 
     @MockBean
     private BoardService boardService;
@@ -92,6 +90,7 @@ class BoardControllerTest {
 
     @Test
     void showErrorPage_whenWhenAttemptToPassTotalScoreUnableToParseAsIntegerFormatInQueryStringToBoardView() throws Exception {
+        String TOTAL_SCORE_IN_INCORRECT_FORMAT = "abc10";
         mockMvc.perform(get("/?total_score=" + TOTAL_SCORE_IN_INCORRECT_FORMAT))
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
@@ -101,6 +100,7 @@ class BoardControllerTest {
     }
     //endregion
 
+    // region start game
     @Test
     void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
         mockMvc.perform(post("/start-game/123"))
@@ -109,7 +109,7 @@ class BoardControllerTest {
     }
 
     @Test
-    void showErrorPage_whenAttemptToGameStartWithImproperStatus() throws Exception {
+    void showErrorPage_whenAttemptToStartGameWithImproperStatus() throws Exception {
         doThrow(new ImproperStatusGameException("Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"))
                 .when(boardService).startNewGame(GAME_ID);
 
@@ -129,7 +129,9 @@ class BoardControllerTest {
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Game not found with Id: " + GAME_ID));
     }
+    // endregion
 
+    // region Create game
     @Test
     void redirectToBoardView_whenNewGameCorrectlyCreated() throws Exception {
         mockMvc.perform(post("/create-new-game")
@@ -168,8 +170,8 @@ class BoardControllerTest {
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Team not found with Id: " + HOME_TEAM_ID));
     }
+    // endregion
 
-    // TODO: Create similar regions for Create new game, Start game
     // region Update game
     @Test
     void showUpdateGameForm() throws Exception {
