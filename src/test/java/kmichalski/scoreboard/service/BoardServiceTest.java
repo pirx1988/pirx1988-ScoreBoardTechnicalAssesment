@@ -127,13 +127,14 @@ class BoardServiceTest {
     }
 
     @Test
-    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWithImproperStatus() {
-        // TODO: Write unit test
-    }
+    void shouldThrowNoSuchElementException_whenAttemptToStartGameWhichNotExists() {
 
-    @Test
-    void shouldThrowImproperGameStatusException_whenAttemptToStartGameWhichNotExists() {
-        // TODO: Write unit test
+        when(gameRepository.findById(GAME_ID)).thenReturn(Optional.empty());
+
+        // Act
+        assertThrows(NoSuchElementException.class, () -> service.startNewGame(GAME_ID));
+        verify(gameRepository, times(1)).findById(GAME_ID);
+        verify(gameRepository, never()).save(any(Game.class));
     }
 
     @SuppressWarnings("unused")
@@ -146,6 +147,7 @@ class BoardServiceTest {
 
         // Act
         assertThrows(ImproperStatusGameException.class, () -> service.startNewGame(GAME_ID));
+        verify(gameRepository, times(1)).findById(GAME_ID);
         verify(gameRepository, never()).save(any(Game.class));
     }
 

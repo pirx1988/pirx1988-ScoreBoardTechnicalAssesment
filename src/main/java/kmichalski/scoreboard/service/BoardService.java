@@ -91,7 +91,7 @@ public class BoardService {
         return gameRepository.findByGameStatusNot(GameStatus.FINISHED);
     }
 
-    public Game getInProgressGame(long gameId) { // TODO: Consider check status as well or change method name to just getGame
+    public Game getInProgressGame(long gameId) {
         return gameRepository.findByIdAndGameStatus(gameId, GameStatus.IN_PROGRESS).orElseThrow(
                 () -> new NoSuchElementException("Game not found with Id: " + gameId)
         );
