@@ -43,6 +43,7 @@ class BoardControllerTest {
     private TeamService teamService;
     @Autowired
     MockMvc mockMvc;
+
     @AfterEach
     void tearDown() {
         reset(boardService);
@@ -135,15 +136,20 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Team not found with Id: " + HOME_TEAM_ID));
+
+        verify(boardService, times(1)).createNewGame(any(NewGameDto.class));
+
     }
     // endregion
 
     // region Start game
     @Test
-    void showUpdatedBoard_whenGameStartedWithProperNewStatus() throws Exception {
-        mockMvc.perform(post("/start-game/123"))
+    void showUpdatedBoard_whenGameStartedToProperNewStatus() throws Exception {
+        mockMvc.perform(post("/start-game/" + GAME_ID))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(view().name("redirect:/"));
+
+        verify(boardService, times(1)).startNewGame(GAME_ID);
     }
 
     @Test
@@ -155,6 +161,8 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Improper Status game: IN_PROGRESS Game with id: 123 not started. Expected Game status: NEW"));
+
+        verify(boardService, times(1)).startNewGame(GAME_ID);
     }
 
     @Test
@@ -166,6 +174,8 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Game not found with Id: " + GAME_ID));
+
+        verify(boardService, times(1)).startNewGame(GAME_ID);
     }
     // endregion
 
@@ -187,6 +197,8 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(model().attributeExists("updateGame"))
                 .andExpect(view().name("update_game.html"));
+
+        verify(boardService, times(1)).getInProgressGame(GAME_ID);
     }
 
     @Test
@@ -198,6 +210,8 @@ class BoardControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(view().name("error-page"))
                 .andExpect(model().attribute("errormsg", "Game not found with Id: " + GAME_ID));
+
+        verify(boardService, times(1)).getInProgressGame(GAME_ID);
     }
 
     @Test
