@@ -58,4 +58,4 @@ mvn clean test
 will show all IN_PROGRESS games where total score is equal 2 
 - Clear button causes deletion of total_score filter and renders board without filtering: http://localhost:8080/ - not started 
 games with status NEW should be visible again
-- In GameRepository @EntityGraph annotation has been applied in order to optimize sql queries, avoid N+1 problem
+- In GameRepository `@EntityGraph` annotation has been applied in order to optimize sql queries, avoid N+1 problem
