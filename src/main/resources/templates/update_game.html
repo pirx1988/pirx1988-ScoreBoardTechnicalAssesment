@@ -17,6 +17,7 @@
         th:each="error : ${#fields.errors('updateGame.*')}" th:text="${error}"/>
   </ul>
   <form class="mt-4" th:action="@{/update-in-progress-game/{gameId}(gameId=${updateGame.id})}" th:object="${updateGame}" method="post">
+    <input type="hidden" th:field="*{version}" />
     <div class="form-group col-2">
       <label for="homeTeamScore" th:text="${homeTeamName}+ '(Home Team):'"></label>
       <input type="number" min="0" id="homeTeamScore" class="form-control" th:field="*{homeTeamScore}">

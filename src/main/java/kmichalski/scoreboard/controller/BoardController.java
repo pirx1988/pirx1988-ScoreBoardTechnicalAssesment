@@ -84,10 +84,12 @@ public class BoardController {
     @GetMapping("/update-in-progress-game/{gameId}")
     public String displayUpdateGame(Model model, @PathVariable long gameId) {
         Game inProgressGame = boardService.getInProgressGame(gameId);
+        // TODO Rewrite to Model mapper: https://www.baeldung.com/entity-to-and-from-dto-for-a-java-spring-application
         UpdateGameDto updateGameDto = UpdateGameDto.builder()
                 .id(inProgressGame.getId())
                 .homeTeamScore(inProgressGame.getHomeTeamScore())
                 .awayTeamScore(inProgressGame.getAwayTeamScore())
+                .version(inProgressGame.getVersion())
                 .build();
         model.addAttribute("updateGame", updateGameDto);
         model.addAttribute("homeTeamName", inProgressGame.getHomeTeam().getName());
@@ -101,7 +103,8 @@ public class BoardController {
             log.error("Updated new game form validation failed due to: " + errors);
             return "update_game.html";
         }
-        boardService.updateGame(gameId, updatedGame.getHomeTeamScore(), updatedGame.getAwayTeamScore());
+        updatedGame.setId(gameId);
+        boardService.updateGame(updatedGame);
         return "redirect:/";
     }
     //endregion

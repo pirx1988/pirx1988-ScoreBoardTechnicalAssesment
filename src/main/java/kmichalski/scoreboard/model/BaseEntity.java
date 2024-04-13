@@ -3,6 +3,7 @@ package kmichalski.scoreboard.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.Version;
 import lombok.Data;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -24,4 +25,5 @@ public class BaseEntity {
     @Column(insertable = false)
     @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime updatedAt;
+
 }

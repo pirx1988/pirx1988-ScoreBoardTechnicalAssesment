@@ -27,7 +27,7 @@ import lombok.*;
         }
 )
 @Builder
-public class Game extends BaseEntity {
+public class Game extends OptimisticLock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,19 +1,27 @@
 package kmichalski.scoreboard.service;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.LockModeType;
 import kmichalski.scoreboard.dto.NewGameDto;
+import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.exception.NegativeTeamScoreException;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
+import kmichalski.scoreboard.model.OptimisticLock;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,12 +66,30 @@ public class BoardService {
     // endregion
 
     // region Update game
-    public Game updateGame(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
-        validateGameScores(gameId, newHomeTeamScore, newAwayTeamScore);
-        Game game = gameRepository.findById(gameId).orElseThrow();
-        game.setHomeTeamScore(newHomeTeamScore);
-        game.setAwayTeamScore(newAwayTeamScore);
-        return gameRepository.save(game);
+    @Transactional
+    @Lock(LockModeType.OPTIMISTIC)
+    public Game updateGame(UpdateGameDto updatedGameDto) {
+        validateGameScores(updatedGameDto);
+        try {
+            // Retrieve the existing game entity from the database
+            Game game = gameRepository.findById(updatedGameDto.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Game not found with id: " + updatedGameDto.getId()));
+
+            // Apply changes to the existing game entity
+            Game updatedGame = new Game();
+            updatedGame.setVersion(updatedGameDto.getVersion());
+            updatedGame.setHomeTeam(game.getHomeTeam());
+            updatedGame.setAwayTeam(game.getAwayTeam());
+            updatedGame.setHomeTeamScore(updatedGameDto.getHomeTeamScore());
+            updatedGame.setAwayTeamScore(updatedGameDto.getAwayTeamScore());
+            updatedGame.setId(updatedGameDto.getId());
+            updatedGame.setGameStatus(game.getGameStatus());
+            gameRepository.save(updatedGame);
+            return updatedGame;
+
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new RuntimeException("Failed to update game due to Optimistic conflict. ", ex);
+        }
     }
     // endregion
 
@@ -97,12 +123,12 @@ public class BoardService {
     //endregion
 
     //region Validation helpers
-    private static void validateGameScores(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
-        if (newHomeTeamScore < 0) {
-            throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + gameId);
+    private static void validateGameScores(UpdateGameDto updatedGameDto) {
+        if (updatedGameDto.getHomeTeamScore() < 0) {
+            throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + updatedGameDto.getId());
         }
-        if (newAwayTeamScore < 0) {
-            throw new NegativeTeamScoreException("Negative Away Team score for gameId: " + gameId);
+        if (updatedGameDto.getAwayTeamScore() < 0) {
+            throw new NegativeTeamScoreException("Negative Away Team score for gameId: " + updatedGameDto.getId());
         }
     }
     // endregion

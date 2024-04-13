@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdateGameDto {
+    private Integer version;
     private long id;
     @Min(value = 0, message = "Home team score must be at least 0")
     @Digits(integer = Integer.MAX_VALUE, fraction = 0, message = "Home team score must be an integer")
