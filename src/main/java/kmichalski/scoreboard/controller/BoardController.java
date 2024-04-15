@@ -5,10 +5,11 @@ import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.exception.IncorrectTotalScoreFormatException;
 import kmichalski.scoreboard.exception.NegativeTotalScoreException;
+import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.Team;
-import kmichalski.scoreboard.service.BoardService;
-import kmichalski.scoreboard.service.TeamService;
+import kmichalski.scoreboard.service.BoardServiceImpl;
+import kmichalski.scoreboard.service.TeamServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -24,8 +25,9 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BoardController {
-    private final BoardService boardService;
-    private final TeamService teamService;
+    private final BoardServiceImpl boardService;
+    private final TeamServiceImpl teamServiceImpl;
+    private final GameDtoMapper gameDtoMapper;
 
     //region Board
     @GetMapping(value = {"", "/", "/board"})
@@ -84,13 +86,7 @@ public class BoardController {
     @GetMapping("/update-in-progress-game/{gameId}")
     public String displayUpdateGame(Model model, @PathVariable long gameId) {
         Game inProgressGame = boardService.getInProgressGame(gameId);
-        // TODO Rewrite to Model mapper: https://www.baeldung.com/entity-to-and-from-dto-for-a-java-spring-application
-        UpdateGameDto updateGameDto = UpdateGameDto.builder()
-                .id(inProgressGame.getId())
-                .homeTeamScore(inProgressGame.getHomeTeamScore())
-                .awayTeamScore(inProgressGame.getAwayTeamScore())
-                .version(inProgressGame.getVersion())
-                .build();
+        UpdateGameDto updateGameDto = gameDtoMapper.convertGameToUpdateGameDto(inProgressGame);
         model.addAttribute("updateGame", updateGameDto);
         model.addAttribute("homeTeamName", inProgressGame.getHomeTeam().getName());
         model.addAttribute("awayTeamName", inProgressGame.getAwayTeam().getName());
@@ -98,12 +94,12 @@ public class BoardController {
     }
 
     @PostMapping("/update-in-progress-game/{gameId}")
-    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes, Model model, @PathVariable Long gameId) {
+    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes,
+                                       Model model, @PathVariable Long gameId) {
         if (errors.hasErrors()) {
             log.error("Updated new game form validation failed due to: " + errors);
             return "update_game.html";
         }
-        updatedGame.setId(gameId);
         boardService.updateGame(updatedGame);
         return "redirect:/";
     }
@@ -125,7 +121,7 @@ public class BoardController {
     }
 
     private void fetchAllTeams(Model model) {
-        List<Team> allTeams = teamService.getAllTeams();
+        List<Team> allTeams = teamServiceImpl.getAllTeams();
         model.addAttribute("allTeams", allTeams);
     }
 

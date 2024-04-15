@@ -1,23 +1,24 @@
 package kmichalski.scoreboard.service;
 
 import kmichalski.scoreboard.dto.NewGameDto;
+import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.exception.NegativeTeamScoreException;
+import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.modelmapper.ModelMapper;
+import org.springframework.dao.OptimisticLockingFailureException;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -27,19 +28,26 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class BoardServiceTest {
     private static final long GAME_ID = 123L;
     private static final int NEW_HOME_TEAM_SCORE = 5;
     private static final int NEW_AWAY_TEAM_SCORE = 4;
     private static final Long HOME_TEAM_ID = 1L;
     private static final long AWAY_TEAM_ID = 2L;
-    @Mock
     GameRepository gameRepository;
-    @Mock
     TeamRepository teamRepository;
-    @InjectMocks
-    BoardService service;
+    GameDtoMapper gameDtoMapper;
+
+    BoardServiceImpl service;
+
+    @BeforeEach
+    void setUp() {
+        ModelMapper mapper = new ModelMapper();
+        gameRepository = Mockito.mock(GameRepository.class);
+        teamRepository = Mockito.mock(TeamRepository.class);
+        gameDtoMapper = new GameDtoMapper(mapper);
+        service = new BoardServiceImpl(gameRepository, teamRepository, gameDtoMapper);
+    }
 
     // region Create new game
 
@@ -162,15 +170,19 @@ class BoardServiceTest {
     // endregion
 
     // region Update game
-
     @Test
     void shouldCorrectlyUpdateAlreadyStartedGame() {
         Game game = Mockito.spy(Game.builder().gameStatus(GameStatus.IN_PROGRESS).build());
 
         when(gameRepository.findById(GAME_ID)).thenReturn(Optional.of(game));
+        UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                .id(GAME_ID)
+                .homeTeamScore(NEW_HOME_TEAM_SCORE)
+                .awayTeamScore(NEW_AWAY_TEAM_SCORE)
+                .build();
 
         // Act
-        service.updateGame(GAME_ID, NEW_HOME_TEAM_SCORE, NEW_AWAY_TEAM_SCORE);
+        service.updateGame(updateGameDto);
 
         ArgumentCaptor<Game> updatedGameArgumentCaptor = ArgumentCaptor.forClass(Game.class);
 
@@ -183,18 +195,47 @@ class BoardServiceTest {
     }
 
     @Test
+    void shouldThrowOptimisticLockingFailureException_whenCatchingVersionGameInconsistency() {
+
+        Game game = Mockito.spy(Game.builder().gameStatus(GameStatus.IN_PROGRESS).build());
+
+        when(gameRepository.findById(GAME_ID)).thenReturn(Optional.of(game));
+        UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                .id(GAME_ID)
+                .homeTeamScore(NEW_HOME_TEAM_SCORE)
+                .awayTeamScore(NEW_AWAY_TEAM_SCORE)
+                .build();
+
+        doThrow(new OptimisticLockingFailureException("Optimistic lock exception")).when(gameRepository)
+                .save(any(Game.class));
+
+        assertThrows(OptimisticLockingFailureException.class, () -> service.updateGame(updateGameDto));
+    }
+
+    @Test
     void shouldThrowException_whenAttemptToUpdateHomeTeamScoreWithNegativeValue() {
+        UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                .id(GAME_ID)
+                .homeTeamScore(-1)
+                .awayTeamScore(1)
+                .build();
+
         // Act
-        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(GAME_ID,-1,1));
-        verify(gameRepository,never()).findById(GAME_ID);
+        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(updateGameDto));
+        verify(gameRepository, never()).findById(GAME_ID);
         verify(gameRepository, never()).save(any(Game.class));
     }
 
     @Test
     void shouldThrowException_whenAttemptToUpdateAwayTeamScoreWithNegativeValue() {
+        UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                .id(GAME_ID)
+                .homeTeamScore(1)
+                .awayTeamScore(-1)
+                .build();
         // Act
-        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(GAME_ID,10,-1));
-        verify(gameRepository,never()).findById(GAME_ID);
+        assertThrows(NegativeTeamScoreException.class, () -> service.updateGame(updateGameDto));
+        verify(gameRepository, never()).findById(GAME_ID);
         verify(gameRepository, never()).save(any(Game.class));
     }
 
@@ -220,6 +261,7 @@ class BoardServiceTest {
         Game updatedGame = finisheddGameArgumentCaptor.getValue();
         assertThat(updatedGame.getGameStatus()).isEqualTo(GameStatus.FINISHED);
     }
+
     @Test
     void shouldThrowNoSuchElementException_whenGameToFinishNotFound() {
         when(gameRepository.findById(GAME_ID)).thenReturn(Optional.empty());

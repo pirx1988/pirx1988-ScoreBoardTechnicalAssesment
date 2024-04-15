@@ -1,26 +1,25 @@
 package kmichalski.scoreboard.service;
 
 import kmichalski.scoreboard.dto.NewGameDto;
+import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 @SpringBootTest()
@@ -32,7 +31,7 @@ public class BoardServiceIntegrationTest {
     private GameRepository gameRepository;
 
     @Autowired
-    private BoardService boardService;
+    private BoardServiceImpl boardService;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -115,14 +114,47 @@ public class BoardServiceIntegrationTest {
                     .build();
             gameRepository.save(gameInProgress);
 
+            UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                    .id(gameInProgress.getId())
+                    .homeTeamScore(NEW_HOME_TEAM_SCORE)
+                    .awayTeamScore(NEW_AWAY_TEAM_SCORE)
+                    .version(gameInProgress.getVersion())
+                    .build();
+
             // Act
-            boardService.updateGame(gameInProgress.getId(), NEW_HOME_TEAM_SCORE, NEW_AWAY_TEAM_SCORE);
+            boardService.updateGame(updateGameDto);
 
             Game updatedGame = gameRepository.findById(gameInProgress.getId()).orElseThrow();
 
             assertEquals(GameStatus.IN_PROGRESS, updatedGame.getGameStatus());
             assertEquals(NEW_HOME_TEAM_SCORE, updatedGame.getHomeTeamScore());
             assertEquals(NEW_AWAY_TEAM_SCORE, updatedGame.getAwayTeamScore());
+        }
+
+        @Test
+        void shouldThrowOptimisticLockingFailureException_whenGameInconsistencyOccured() {
+            teamRepository.save(homeTeam);
+            teamRepository.save(awayTeam);
+
+            Game gameInProgress = Game.builder().homeTeam(homeTeam)
+                    .awayTeam(awayTeam)
+                    .homeTeamScore(NEW_HOME_TEAM_SCORE - 10)
+                    .awayTeamScore(NEW_AWAY_TEAM_SCORE - 10)
+                    .gameStatus(GameStatus.IN_PROGRESS)
+                    .build();
+            gameRepository.save(gameInProgress);
+
+            UpdateGameDto updateGameDto = UpdateGameDto.builder()
+                    .id(gameInProgress.getId())
+                    .homeTeamScore(NEW_HOME_TEAM_SCORE)
+                    .awayTeamScore(NEW_AWAY_TEAM_SCORE)
+                    .version(gameInProgress.getVersion())
+                    .build();
+
+            gameRepository.save(gameInProgress);
+
+            // Act
+            assertThrows(OptimisticLockingFailureException.class, () -> boardService.updateGame(updateGameDto));
         }
 
         @Test
