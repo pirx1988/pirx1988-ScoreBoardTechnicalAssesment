@@ -1,16 +1,22 @@
 package kmichalski.scoreboard.service;
 
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.LockModeType;
 import kmichalski.scoreboard.dto.NewGameDto;
+import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.exception.ImproperStatusGameException;
-import kmichalski.scoreboard.exception.NegativeTeamScoreException;
+import kmichalski.scoreboard.utils.GameUtils;
+import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
-import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,25 +24,20 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BoardService {
+public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
+    private final GameDtoMapper gameDtoMapper;
 
     // region Create new game
     public Game createNewGame(NewGameDto newgameDto) {
-        Team savedHomeTeam = teamRepository.findById(newgameDto.getHomeTeamId()).orElseThrow(
+        teamRepository.findById(newgameDto.getHomeTeamId()).orElseThrow(
                 () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getHomeTeamId())
         );
-        Team savedAwayTeam = teamRepository.findById(newgameDto.getAwayTeamId()).orElseThrow(
+        teamRepository.findById(newgameDto.getAwayTeamId()).orElseThrow(
                 () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getAwayTeamId())
         );
-        Game newGame = Game.builder()
-                .gameStatus(GameStatus.NEW)
-                .homeTeam(savedHomeTeam)
-                .awayTeam(savedAwayTeam)
-                .awayTeamScore(null)
-                .homeTeamScore(null)
-                .build();
+        Game newGame = gameDtoMapper.convertNewGameDtoToGame(newgameDto);
         return gameRepository.save(newGame);
     }
     // endregion
@@ -58,12 +59,28 @@ public class BoardService {
     // endregion
 
     // region Update game
-    public Game updateGame(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
-        validateGameScores(gameId, newHomeTeamScore, newAwayTeamScore);
-        Game game = gameRepository.findById(gameId).orElseThrow();
-        game.setHomeTeamScore(newHomeTeamScore);
-        game.setAwayTeamScore(newAwayTeamScore);
-        return gameRepository.save(game);
+    // n H2 in-memory database, the default isolation level is READ_COMMITTED and Propagation REQUIRED
+    @Transactional
+    @Lock(LockModeType.OPTIMISTIC)
+    public Game updateGame(UpdateGameDto updatedGameDto) {
+        GameUtils.validateGameScores(updatedGameDto);
+        try {
+            // Retrieve the existing game entity from the database
+            Game game = gameRepository.findById(updatedGameDto.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Game not found with id: " + updatedGameDto.getId()));
+
+            // Apply changes to the existing game entity
+            Game updatedGame = gameDtoMapper.convertUpdateGameDtoToGame(updatedGameDto);
+            updatedGame.setHomeTeam(game.getHomeTeam());
+            updatedGame.setAwayTeam(game.getAwayTeam());
+            updatedGame.setGameStatus(game.getGameStatus());
+            gameRepository.save(updatedGame);
+            return updatedGame;
+
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new ObjectOptimisticLockingFailureException("Failed to update game due to another changes which has already occurred." +
+                    " Open update page and try again", ex);
+        }
     }
     // endregion
 
@@ -96,14 +113,4 @@ public class BoardService {
     }
     //endregion
 
-    //region Validation helpers
-    private static void validateGameScores(Long gameId, Integer newHomeTeamScore, Integer newAwayTeamScore) {
-        if (newHomeTeamScore < 0) {
-            throw new NegativeTeamScoreException("Negative Home Team score for gameId: " + gameId);
-        }
-        if (newAwayTeamScore < 0) {
-            throw new NegativeTeamScoreException("Negative Away Team score for gameId: " + gameId);
-        }
-    }
-    // endregion
 }

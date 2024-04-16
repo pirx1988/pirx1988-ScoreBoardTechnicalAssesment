@@ -11,7 +11,7 @@ import lombok.*;
 @Setter
 @EqualsAndHashCode(callSuper = false)
 @Builder
-public class Team extends BaseEntity {
+public class Team extends OptimisticLock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

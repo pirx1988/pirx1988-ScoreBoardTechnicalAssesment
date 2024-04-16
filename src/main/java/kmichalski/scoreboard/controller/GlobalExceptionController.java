@@ -4,6 +4,7 @@ import kmichalski.scoreboard.exception.ImproperStatusGameException;
 import kmichalski.scoreboard.exception.IncorrectTotalScoreFormatException;
 import kmichalski.scoreboard.exception.NegativeTotalScoreException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -38,6 +39,11 @@ public class GlobalExceptionController {
 
     @ExceptionHandler(value={NegativeTotalScoreException.class})
     public ModelAndView handleNegativeValueOfTotalScoreException(NegativeTotalScoreException exception) {
+        return createAndSetupModelAndView(exception);
+    }
+
+    @ExceptionHandler(value={ObjectOptimisticLockingFailureException.class})
+    public ModelAndView handleObjectOptimisticLockingFailureException(ObjectOptimisticLockingFailureException exception) {
         return createAndSetupModelAndView(exception);
     }
 

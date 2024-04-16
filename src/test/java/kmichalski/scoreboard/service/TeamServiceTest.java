@@ -8,15 +8,13 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import static org.mockito.Mockito.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 @ExtendWith(MockitoExtension.class)
 class TeamServiceTest {
     @Mock
     TeamRepository teamRepository;
 
     @InjectMocks
-    TeamService service;
+    TeamServiceImpl service;
     @Test
     void shouldGetAllTeamsFromRepository() {
 

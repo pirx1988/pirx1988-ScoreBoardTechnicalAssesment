@@ -5,17 +5,17 @@ import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.exception.IncorrectTotalScoreFormatException;
 import kmichalski.scoreboard.exception.NegativeTotalScoreException;
+import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.Team;
-import kmichalski.scoreboard.service.BoardService;
-import kmichalski.scoreboard.service.TeamService;
+import kmichalski.scoreboard.service.GameServiceImpl;
+import kmichalski.scoreboard.service.TeamServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +24,10 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BoardController {
-    private final BoardService boardService;
-    private final TeamService teamService;
+
+    private final GameServiceImpl boardService;
+    private final TeamServiceImpl teamServiceImpl;
+    private final GameDtoMapper gameDtoMapper;
 
     //region Board
     @GetMapping(value = {"", "/", "/board"})
@@ -60,7 +62,7 @@ public class BoardController {
     }
 
     @PostMapping("/create-new-game")
-    public String createNewGame(@Valid @ModelAttribute("newGame") NewGameDto game, Errors errors, RedirectAttributes redirectAttributes, Model model) {
+    public String createNewGame(@Valid @ModelAttribute("newGame") NewGameDto game, Errors errors, Model model) {
         if (errors.hasErrors()) {
             log.error("Create new game form validation failed due to: " + errors);
             fetchAllTeams(model);
@@ -84,11 +86,7 @@ public class BoardController {
     @GetMapping("/update-in-progress-game/{gameId}")
     public String displayUpdateGame(Model model, @PathVariable long gameId) {
         Game inProgressGame = boardService.getInProgressGame(gameId);
-        UpdateGameDto updateGameDto = UpdateGameDto.builder()
-                .id(inProgressGame.getId())
-                .homeTeamScore(inProgressGame.getHomeTeamScore())
-                .awayTeamScore(inProgressGame.getAwayTeamScore())
-                .build();
+        UpdateGameDto updateGameDto = gameDtoMapper.convertGameToUpdateGameDto(inProgressGame);
         model.addAttribute("updateGame", updateGameDto);
         model.addAttribute("homeTeamName", inProgressGame.getHomeTeam().getName());
         model.addAttribute("awayTeamName", inProgressGame.getAwayTeam().getName());
@@ -96,12 +94,13 @@ public class BoardController {
     }
 
     @PostMapping("/update-in-progress-game/{gameId}")
-    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes, Model model, @PathVariable Long gameId) {
+    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors,
+                                       @PathVariable Long gameId) {
         if (errors.hasErrors()) {
             log.error("Updated new game form validation failed due to: " + errors);
             return "update_game.html";
         }
-        boardService.updateGame(gameId, updatedGame.getHomeTeamScore(), updatedGame.getAwayTeamScore());
+        boardService.updateGame(updatedGame);
         return "redirect:/";
     }
     //endregion
@@ -122,7 +121,7 @@ public class BoardController {
     }
 
     private void fetchAllTeams(Model model) {
-        List<Team> allTeams = teamService.getAllTeams();
+        List<Team> allTeams = teamServiceImpl.getAllTeams();
         model.addAttribute("allTeams", allTeams);
     }
 
