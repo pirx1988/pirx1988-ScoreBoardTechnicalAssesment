@@ -1,5 +1,6 @@
 package kmichalski.scoreboard.mapper;
 
+import kmichalski.scoreboard.dto.NewGameDto;
 import kmichalski.scoreboard.dto.UpdateGameDto;
 import kmichalski.scoreboard.model.Game;
 import lombok.NoArgsConstructor;
@@ -20,5 +21,10 @@ public class GameDtoMapper {
     public Game convertUpdateGameDtoToGame(UpdateGameDto updateGameDto) {
         Game updatedGame = modelMapper.map(updateGameDto, Game.class);
         return updatedGame;
+    }
+
+    public Game convertNewGameDtoToGame(NewGameDto newGameDto) {
+        Game newGame = modelMapper.map(newGameDto, Game.class);
+        return newGame;
     }
 }

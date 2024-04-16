@@ -25,6 +25,7 @@ import java.util.Optional;
 @Slf4j
 @RequiredArgsConstructor
 public class BoardController {
+
     private final BoardServiceImpl boardService;
     private final TeamServiceImpl teamServiceImpl;
     private final GameDtoMapper gameDtoMapper;
@@ -62,7 +63,7 @@ public class BoardController {
     }
 
     @PostMapping("/create-new-game")
-    public String createNewGame(@Valid @ModelAttribute("newGame") NewGameDto game, Errors errors, RedirectAttributes redirectAttributes, Model model) {
+    public String createNewGame(@Valid @ModelAttribute("newGame") NewGameDto game, Errors errors, Model model) {
         if (errors.hasErrors()) {
             log.error("Create new game form validation failed due to: " + errors);
             fetchAllTeams(model);
@@ -94,8 +95,8 @@ public class BoardController {
     }
 
     @PostMapping("/update-in-progress-game/{gameId}")
-    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors, RedirectAttributes redirectAttributes,
-                                       Model model, @PathVariable Long gameId) {
+    public String updateInProgressGame(@Valid @ModelAttribute("updateGame") UpdateGameDto updatedGame, Errors errors,
+                                       @PathVariable Long gameId) {
         if (errors.hasErrors()) {
             log.error("Updated new game form validation failed due to: " + errors);
             return "update_game.html";

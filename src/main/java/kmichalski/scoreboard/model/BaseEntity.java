@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Data
 @EntityListeners(AuditingEntityListener.class)
 @MappedSuperclass
-public class BaseEntity {
+public abstract class BaseEntity {
     @CreatedDate
     @Column(updatable = false)
     @DateTimeFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")

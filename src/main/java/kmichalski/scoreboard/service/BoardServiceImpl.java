@@ -25,26 +25,20 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BoardServiceImpl implements BoardService {
+public class BoardServiceImpl implements BoardService { // TODO: Rename it to GameService
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
     private final GameDtoMapper gameDtoMapper;
 
     // region Create new game
     public Game createNewGame(NewGameDto newgameDto) {
-        Team savedHomeTeam = teamRepository.findById(newgameDto.getHomeTeamId()).orElseThrow(
+        teamRepository.findById(newgameDto.getHomeTeamId()).orElseThrow(
                 () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getHomeTeamId())
         );
-        Team savedAwayTeam = teamRepository.findById(newgameDto.getAwayTeamId()).orElseThrow(
+        teamRepository.findById(newgameDto.getAwayTeamId()).orElseThrow(
                 () -> new NoSuchElementException("Team not found with Id: " + newgameDto.getAwayTeamId())
         );
-        Game newGame = Game.builder()
-                .gameStatus(GameStatus.NEW)
-                .homeTeam(savedHomeTeam)
-                .awayTeam(savedAwayTeam)
-                .awayTeamScore(null) // TODO - set default values in db as NULL
-                .homeTeamScore(null)
-                .build();
+        Game newGame = gameDtoMapper.convertNewGameDtoToGame(newgameDto);
         return gameRepository.save(newGame);
     }
     // endregion
