@@ -25,13 +25,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest()
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS) // spring context is not loaded between each test method
 @ActiveProfiles("test")
-public class BoardServiceIntegrationTest {
+public class GameServiceIntegrationTest {
 
     @Autowired
     private GameRepository gameRepository;
 
     @Autowired
-    private BoardServiceImpl boardService;
+    private GameServiceImpl boardService;
 
     @Autowired
     private TeamRepository teamRepository;

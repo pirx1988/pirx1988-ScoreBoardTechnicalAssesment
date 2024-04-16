@@ -6,7 +6,7 @@ import kmichalski.scoreboard.model.Game;
 
 import java.util.List;
 
-public interface BoardService {
+public interface GameService {
     Game createNewGame(NewGameDto newgameDto);
 
     Game startNewGame(Long gameId);

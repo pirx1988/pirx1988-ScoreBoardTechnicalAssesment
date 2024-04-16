@@ -9,7 +9,6 @@ import kmichalski.scoreboard.utils.GameUtils;
 import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
-import kmichalski.scoreboard.model.Team;
 import kmichalski.scoreboard.repostiory.GameRepository;
 import kmichalski.scoreboard.repostiory.TeamRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +24,7 @@ import java.util.NoSuchElementException;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class BoardServiceImpl implements BoardService { // TODO: Rename it to GameService
+public class GameServiceImpl implements GameService {
     private final GameRepository gameRepository;
     private final TeamRepository teamRepository;
     private final GameDtoMapper gameDtoMapper;

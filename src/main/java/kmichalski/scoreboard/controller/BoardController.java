@@ -8,7 +8,7 @@ import kmichalski.scoreboard.exception.NegativeTotalScoreException;
 import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.Team;
-import kmichalski.scoreboard.service.BoardServiceImpl;
+import kmichalski.scoreboard.service.GameServiceImpl;
 import kmichalski.scoreboard.service.TeamServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +16,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BoardController {
 
-    private final BoardServiceImpl boardService;
+    private final GameServiceImpl boardService;
     private final TeamServiceImpl teamServiceImpl;
     private final GameDtoMapper gameDtoMapper;
 

@@ -6,7 +6,7 @@ import kmichalski.scoreboard.mapper.GameDtoMapper;
 import kmichalski.scoreboard.model.Game;
 import kmichalski.scoreboard.model.GameStatus;
 import kmichalski.scoreboard.model.Team;
-import kmichalski.scoreboard.service.BoardServiceImpl;
+import kmichalski.scoreboard.service.GameServiceImpl;
 import kmichalski.scoreboard.service.TeamServiceImpl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,7 @@ class BoardControllerTest {
     private static final Integer NEGATIVE_TOTAL_SCORE = -10;
 
     @MockBean
-    private BoardServiceImpl boardService;
+    private GameServiceImpl boardService;
     @MockBean
     private TeamServiceImpl teamServiceImpl;
 

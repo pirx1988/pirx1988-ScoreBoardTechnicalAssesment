@@ -28,7 +28,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-class BoardServiceTest {
+class GameServiceTest {
     private static final long GAME_ID = 123L;
     private static final int NEW_HOME_TEAM_SCORE = 5;
     private static final int NEW_AWAY_TEAM_SCORE = 4;
@@ -38,7 +38,7 @@ class BoardServiceTest {
     TeamRepository teamRepository;
     GameDtoMapper gameDtoMapper;
 
-    BoardServiceImpl service;
+    GameServiceImpl service;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +46,7 @@ class BoardServiceTest {
         gameRepository = Mockito.mock(GameRepository.class);
         teamRepository = Mockito.mock(TeamRepository.class);
         gameDtoMapper = new GameDtoMapper(mapper);
-        service = new BoardServiceImpl(gameRepository, teamRepository, gameDtoMapper);
+        service = new GameServiceImpl(gameRepository, teamRepository, gameDtoMapper);
     }
 
     // region Create new game
